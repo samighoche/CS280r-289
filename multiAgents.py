@@ -73,34 +73,44 @@ class ReflexAgent(Agent):
     The fourth is a penchant for avoiding STOP directions and idleness
     '''
     # Useful information you can extract from a GameState (pacman.py)
-    successorGameState = currentGameState.generatePacmanSuccessor(action)
-    newPos = successorGameState.getPacmanPosition()
-    newFood = successorGameState.getFood()
-    newGhostStates = successorGameState.getGhostStates()
-    newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+    # successorGameState = currentGameState.generatePacmanSuccessor(action)
+    # newPos = successorGameState.getPacmanPosition()
+    # newFood = successorGameState.getFood()
+    # newGhostStates = successorGameState.getGhostStates()
+    # newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
-    # returns the opposite of the minimum between the nearest food and 50
+    # # returns the opposite of the minimum between the nearest food and 50
+    # def mindistance():
+    #   distances = []
+    #   for food in newFood.asList():
+    #     distances.append(util.manhattanDistance(newPos, food))
+    #   if distances == []:
+    #     return 50
+    #   return -min(min(distances), 50)
+
+    # # return points for eating food
+    # def eatingscore():
+    #   if len(currentGameState.getFood().asList()) > len(newFood.asList()):
+    #     return 1
+    #   return 0
+    
+    # # penalize idleness
+    # def stopscore():  
+    #   if action == Directions.STOP:
+    #     return -1
+    #   return 0
+    
+    # return 2*successorGameState.getScore() + 5*mindistance() + 100*eatingscore() + 10*stopscore()
+
+    pos = currentGameState.getPacmanPosition()
+
     def mindistance():
-      distances = []
-      for food in newFood.asList():
-        distances.append(util.manhattanDistance(newPos, food))
-      if distances == []:
-        return 50
-      return -min(min(distances), 50)
+      minimum = float("inf")
+      for food in currentGameState.getFood().asList():
+        minimum = min(minimum, util.manhattanDistance(pos, food))
+      return -min(minimum, 50)
 
-    # return points for eating food
-    def eatingscore():
-      if len(currentGameState.getFood().asList()) > len(newFood.asList()):
-        return 1
-      return 0
-    
-    # penalize idleness
-    def stopscore():  
-      if action == Directions.STOP:
-        return -1
-      return 0
-    
-    return 2*successorGameState.getScore() + 5*mindistance() + 100*eatingscore() + 10*stopscore()
+    return 10*currentGameState.getScore() + 5*mindistance()
 
 
 def scoreEvaluationFunction(currentGameState):
