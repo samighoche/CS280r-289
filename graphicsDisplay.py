@@ -330,7 +330,7 @@ class PacmanGraphics:
         if ghost.scaredTimer > 0:
             return SCARED_COLOR
         else:
-            return GHOST_COLORS[ghostIndex]
+            return GHOST_COLORS[ghostIndex % len(GHOST_COLORS)]
 
     def drawGhost(self, ghost, agentIndex):
         pos = self.getPosition(ghost)
@@ -394,10 +394,7 @@ class PacmanGraphics:
             move_by(ghostImagePart, delta)
         refresh()
 
-        if ghost.scaredTimer > 0:
-            color = SCARED_COLOR
-        else:
-            color = GHOST_COLORS[ghostIndex]
+        color = self.getGhostColor(ghost, ghostIndex)
         edit(ghostImageParts[0], ('fill', color), ('outline', color))
         self.moveEyes(self.getPosition(ghost), self.getDirection(ghost), ghostImageParts[-4:])
         refresh()
