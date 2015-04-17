@@ -681,6 +681,8 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
            
 
     firstGame.dist = dist
+    firstGame.adj_list = adj_list
+
 
 
     for i in range( numGames ):
@@ -695,6 +697,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
             rules.quiet = False
         game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
         game.dist = dist
+        game.adj_list = adj_list
         game.run()
         if not beQuiet: games.append(game)
 

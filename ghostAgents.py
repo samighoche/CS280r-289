@@ -42,6 +42,72 @@ class RandomGhost( GhostAgent ):
         dist.normalize()
         return dist
 
+
+
+class FiveGhost( GhostAgent):
+    "A ghost that takes into account other ghosts positions and tries to trap pacman."
+    def __init__(self, index):
+        self.index = index
+
+    def count_removed_from_others(self, state, depth):
+        pacmanPosition = state.getPacmanPosition()
+        pos = state.getGhostPosition( self.index )
+        removedPos = set()
+        allGhostPositions = state.getGhostPositions().remove(pos)
+        adj_lst = state.adj_lst
+        for ghostposition in allGhostPositions:
+            removedPos.add(ghostposition)
+            for neighbor in adj_lst[ghostposition]:
+                if state.dist[(neighbor, pacmanPosition)] <= depth:
+                    removedPos.add(neighbor)
+        return (len(removedPos), removedPos)
+            
+
+
+    def getDistribution(self, state, depth=3):
+        speed = 1
+        legalActions = state.getLegalActions( self.index )
+        pos = state.getGhostPosition( self.index )
+        actionVectors = [Actions.directionToVector( a, speed ) for a in legalActions]
+        newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
+
+        numRemovedOthers, removedPos = self.count_removed_from_others(state, depth)
+
+        bestNumRemoved = 0
+
+        bestActions = []
+
+        for newPos in newPositions:
+            for neighbor in adj_lst[newPos]:
+                if state.dist[(neighbor, pacmanPosition)] <= depth:
+                    removedPos.add(neighbor)
+            if len(removedPos) > bestNumRemoved:
+                bestNumRemoved = len(removedPos)
+                action = legalActions[newPositions.index(newPos)]
+                bestActions = [action]
+            elif len(removedPos) == bestNumRemoved:
+                action = legalActions[newPositions.index(newPos)]
+                bestActions.append(action)
+
+        if len(bestActions) == 1:
+            bestActionsFinal = bestActions
+        else:
+            actionVectors = [Actions.directionToVector( a, speed ) for a in bestActions]
+            newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
+            pacmanPosition = state.getPacmanPosition()
+
+            # Select best actions given the state
+            distancesToPacman = [state.dist[( pos, pacmanPosition )] for pos in newPositions]    
+            bestScore = min( distancesToPacman )
+            bestProb = 0.8
+            bestActionsFinal = [action for action, distance in zip( bestActions, distancesToPacman ) if distance == bestScore] 
+
+        dist = util.Counter()
+        for a in bestActionsFinal: dist[a] = bestProb / len(bestActionsFinal)
+        # for a in legalActions: dist[a] += ( 1-bestProb ) / len(legalActions)
+        dist.normalize()
+        return dist
+
 class DirectionalGhost( GhostAgent ):
     "A ghost that prefers to rush Pacman, or flee when scared."
     def __init__( self, index, prob_attack=0.8, prob_scaredFlee=0.8 ):
