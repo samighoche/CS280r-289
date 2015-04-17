@@ -110,7 +110,7 @@ class GameState:
 
         # Time passes
         if agentIndex == 0:
-            state.data.scoreChange += -TIME_PENALTY # Penalty for waiting around
+            state.data.scoreChange += TIME_PENALTY # Penalty for waiting around
         else:
             GhostRules.decrementTimer( state.data.agentStates[agentIndex] )
 
@@ -360,7 +360,7 @@ class PacmanRules:
         x,y = position
         # Eat food
         if state.data.food[x][y]:
-            state.data.scoreChange += 10
+            # state.data.scoreChange += 10
             state.data.food = state.data.food.copy()
             state.data.food[x][y] = False
             state.data._foodEaten = position
@@ -391,10 +391,10 @@ class GhostRules:
         conf = state.getGhostState( ghostIndex ).configuration
         possibleActions = Actions.getPossibleActions( conf, state.data.layout.walls )
         reverse = Actions.reverseDirection( conf.direction )
-        if Directions.STOP in possibleActions:
-            possibleActions.remove( Directions.STOP )
-        if reverse in possibleActions and len( possibleActions ) > 1:
-            possibleActions.remove( reverse )
+        # if Directions.STOP in possibleActions:
+        #     possibleActions.remove( Directions.STOP )
+        # if reverse in possibleActions and len( possibleActions ) > 1:
+        #     possibleActions.remove( reverse )
         return possibleActions
     getLegalActions = staticmethod( getLegalActions )
 
@@ -631,6 +631,53 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
 
     rules = ClassicGameRules(timeout)
     games = []
+
+    firstGame = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
+    game
+
+    dist = {}
+
+    gameState = firstGame.state
+
+    global walls
+    walls = list(gameState.getWalls())
+    walls.reverse()
+    global adj_list
+    N = len(walls)
+    M = len(walls[0])
+    for i in range(0,N):
+    for j in range(0,M):
+        if walls[i][j] != "T":
+            adj_list[(i, j)] = []
+            # check top
+            if i > 0 and walls[i-1][j] != "T":
+                adj_list[(i, j)].append((i-1, j))
+            # check bottom
+            if i < N-1 and walls[i+1][j] != "T":
+                adj_list[(i, j)].append((i+1, j))
+            # check left
+            if j > 0 and walls[i][j-1] != "T":
+                adj_list[(i, j)].append((i, j-1))
+            # check right
+            if j < M-1 and walls[i][j+1] != "T":
+                adj_list[(i, j)].append((i, j+1))
+
+
+    global dist
+    for v in adj_list:
+    for u in adj_list:
+      dist[(v, u)] = float("inf")
+      if u in adj_list[v]:
+        dist[(v, u)] = 1
+    for v in adj_list:
+    dist[(v, v)] = 0
+    for k in adj_list:
+    for i in adj_list:
+      for j in adj_list:
+        if dist[(i, j)] > dist[(i, k)] + dist[(k, j)]: 
+          dist[(i, j)] = dist[(i, k)] + dist[(k, j)]
+
+
 
     for i in range( numGames ):
         beQuiet = i < numTraining
