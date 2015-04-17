@@ -54,6 +54,7 @@ class DirectionalGhost( GhostAgent ):
         ghostState = state.getGhostState( self.index )
         legalActions = state.getLegalActions( self.index )
         pos = state.getGhostPosition( self.index )
+        print state.dist[(pos, state.getPacmanPosition())]
         isScared = ghostState.scaredTimer > 0
 
         speed = 1
@@ -64,7 +65,8 @@ class DirectionalGhost( GhostAgent ):
         pacmanPosition = state.getPacmanPosition()
 
         # Select best actions given the state
-        distancesToPacman = [manhattanDistance( pos, pacmanPosition ) for pos in newPositions]
+        distancesToPacman = [state.dist[( pos, pacmanPosition )] for pos in newPositions]
+
         if isScared:
             bestScore = max( distancesToPacman )
             bestProb = self.prob_scaredFlee

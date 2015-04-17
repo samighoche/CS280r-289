@@ -632,51 +632,56 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     rules = ClassicGameRules(timeout)
     games = []
 
-    firstGame = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
-    game
+    # First generate distances
+    gameDisplay = display
+    rules.quiet = False
+    firstGame = rules.newGame( layout, pacman, ghosts, gameDisplay, True, catchExceptions)
 
     dist = {}
 
     gameState = firstGame.state
 
-    global walls
     walls = list(gameState.getWalls())
     walls.reverse()
-    global adj_list
+    adj_list = {}
     N = len(walls)
+    print walls
     M = len(walls[0])
     for i in range(0,N):
-    for j in range(0,M):
-        if walls[i][j] != "T":
-            adj_list[(i, j)] = []
-            # check top
-            if i > 0 and walls[i-1][j] != "T":
-                adj_list[(i, j)].append((i-1, j))
-            # check bottom
-            if i < N-1 and walls[i+1][j] != "T":
-                adj_list[(i, j)].append((i+1, j))
-            # check left
-            if j > 0 and walls[i][j-1] != "T":
-                adj_list[(i, j)].append((i, j-1))
-            # check right
-            if j < M-1 and walls[i][j+1] != "T":
-                adj_list[(i, j)].append((i, j+1))
+        for j in range(0,M):
+            if not walls[i][j]:
+                adj_list[(i, j)] = []
+                # check top
+                if i > 0 and not walls[i-1][j]:
+                    adj_list[(i, j)].append((i-1, j))
+                # check bottom
+                if i < N-1 and not walls[i+1][j]:
+                    adj_list[(i, j)].append((i+1, j))
+                # check left
+                if j > 0 and not walls[i][j-1]:
+                    adj_list[(i, j)].append((i, j-1))
+                # check right
+                if j < M-1 and not walls[i][j+1]:
+                    adj_list[(i, j)].append((i, j+1))
 
-
-    global dist
+    """
+    Use Floyd Warshall algorithm to precompute distances between all positions
+    """
     for v in adj_list:
-    for u in adj_list:
-      dist[(v, u)] = float("inf")
-      if u in adj_list[v]:
-        dist[(v, u)] = 1
+     for u in adj_list:
+       dist[(v, u)] = float("inf")
+       if u in adj_list[v]:
+         dist[(v, u)] = 1
     for v in adj_list:
-    dist[(v, v)] = 0
+     dist[(v, v)] = 0
     for k in adj_list:
-    for i in adj_list:
-      for j in adj_list:
-        if dist[(i, j)] > dist[(i, k)] + dist[(k, j)]: 
-          dist[(i, j)] = dist[(i, k)] + dist[(k, j)]
+     for i in adj_list:
+       for j in adj_list:
+         if dist[(i, j)] > dist[(i, k)] + dist[(k, j)]: 
+           dist[(i, j)] = dist[(i, k)] + dist[(k, j)]
+           
 
+    firstGame.dist = dist
 
 
     for i in range( numGames ):
@@ -690,6 +695,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
             gameDisplay = display
             rules.quiet = False
         game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
+        game.dist = dist
         game.run()
         if not beQuiet: games.append(game)
 
