@@ -686,6 +686,7 @@ class Game:
                 print self.adj_lst
                 observation.dist = self.dist
                 observation.adj_lst = self.adj_lst
+                observation.sight = self.sight
                 action = agent.getAction(observation)
             self.unmute()
 

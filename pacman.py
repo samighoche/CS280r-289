@@ -684,6 +684,41 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     firstGame.adj_list = adj_list
 
 
+    """
+    Calculate sight for stigmergy.  
+    """
+    sight = {}
+    # Set initial values
+    for i in range(0,N):
+        for j in range(0,M):
+            for k in range(0,N):
+                for l in range(0,M):
+                    sight[((i,j), (k,l))] = False
+    for i in range(0,N):
+        for j in range(0,M):
+            sight[(i,j), (i,j)] = True
+            for k in range(1,N-i):
+                if not walls[i+k][j]:
+                    sight[(i,j), (i+k,j)] = True
+                else:
+                    break
+            for k in range(1,i+1):
+                if not walls[i-k][j]:
+                    sight[(i,j), (i-k,j)] = True
+                else:
+                    break
+            for k in range(1,M-j):
+                if not walls[i][j+k]:
+                    sight[(i,j), (i,j+k)] = True
+                else:
+                    break
+            for k in range(1,j+1):
+                if not walls[i][j-k]:
+                    sight[(i,j), (i,j-k)] = True                    
+                else:
+                    break
+
+    firstGame.sight = sight
 
     for i in range( numGames ):
         beQuiet = i < numTraining
@@ -698,6 +733,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
         game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
         game.dist = dist
         game.adj_list = adj_list
+        game.sight = sight
         game.run()
         if not beQuiet: games.append(game)
 
