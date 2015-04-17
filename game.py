@@ -683,9 +683,8 @@ class Game:
                     self.unmute()
                     return
             else:
-                print self.adj_lst
                 observation.dist = self.dist
-                observation.adj_lst = self.adj_lst
+                observation.adj_list = self.adj_list
                 observation.sight = self.sight
                 action = agent.getAction(observation)
             self.unmute()
