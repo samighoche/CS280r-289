@@ -645,7 +645,6 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     walls.reverse()
     adj_list = {}
     N = len(walls)
-    print walls
     M = len(walls[0])
     for i in range(0,N):
         for j in range(0,M):

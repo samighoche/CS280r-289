@@ -54,7 +54,6 @@ class DirectionalGhost( GhostAgent ):
         ghostState = state.getGhostState( self.index )
         legalActions = state.getLegalActions( self.index )
         pos = state.getGhostPosition( self.index )
-        print state.dist[(pos, state.getPacmanPosition())]
         isScared = ghostState.scaredTimer > 0
 
         speed = 1
