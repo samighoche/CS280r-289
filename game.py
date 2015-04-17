@@ -684,6 +684,7 @@ class Game:
                     return
             else:
                 observation.dist = self.dist
+                observation.sight = self.sight
                 action = agent.getAction(observation)
             self.unmute()
 
