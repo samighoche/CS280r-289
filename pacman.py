@@ -515,6 +515,8 @@ def readCommand( argv ):
                       help='A recorded game file (pickle) to replay', default=None)
     parser.add_option('-a','--agentArgs',dest='agentArgs',
                       help='Comma separated values sent to agent. e.g. "opt1=val1,opt2,opt3=val3"')
+    parser.add_option('--alg', '--algArgs',dest='algArgs',
+                      help='Comma separated values sent to game. e.g. "opt1=val1,opt2,opt3=val3"')
     parser.add_option('-x', '--numTraining', dest='numTraining', type='int',
                       help=default('How many episodes are training (suppresses output)'), default=0)
     parser.add_option('--frameTime', dest='frameTime', type='float',
@@ -525,6 +527,7 @@ def readCommand( argv ):
                       help=default('Maximum length of time an agent can spend computing in a single game'), default=30)
 
     options, otherjunk = parser.parse_args(argv)
+    #print options
     if len(otherjunk) != 0:
         raise Exception('Command line input not understood: ' + str(otherjunk))
     args = dict()
@@ -570,6 +573,9 @@ def readCommand( argv ):
     args['record'] = options.record
     args['catchExceptions'] = options.catchExceptions
     args['timeout'] = options.timeout
+
+    if options.algArgs is not None:
+        args['alg'] = options.algArgs
 
     # Special case: recorded games don't use the runGames method or args structure
     if options.gameToReplay != None:
@@ -625,7 +631,7 @@ def replayGame( layout, actions, display ):
 
     display.finish()
 
-def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0, catchExceptions=False, timeout=30 ):
+def runGames( layout, pacman, ghosts, display, numGames, record, alg, numTraining = 0, catchExceptions=False, timeout=30 ):
     import __main__
     __main__.__dict__['_display'] = display
 
@@ -642,7 +648,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     gameState = firstGame.state
 
     walls = list(gameState.getWalls())
-    walls.reverse()
+    # walls.reverse()
     adj_list = {}
     N = len(walls)
     M = len(walls[0])
@@ -667,17 +673,17 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
     Use Floyd Warshall algorithm to precompute distances between all positions
     """
     for v in adj_list:
-     for u in adj_list:
-       dist[(v, u)] = float("inf")
-       if u in adj_list[v]:
-         dist[(v, u)] = 1
+        for u in adj_list:
+            dist[(v, u)] = float("inf")
+            if u in adj_list[v]:
+                dist[(v, u)] = 1
     for v in adj_list:
-     dist[(v, v)] = 0
+        dist[(v, v)] = 0
     for k in adj_list:
-     for i in adj_list:
-       for j in adj_list:
-         if dist[(i, j)] > dist[(i, k)] + dist[(k, j)]: 
-           dist[(i, j)] = dist[(i, k)] + dist[(k, j)]
+        for i in adj_list:
+            for j in adj_list:
+                if dist[(i, j)] > dist[(i, k)] + dist[(k, j)]: 
+                    dist[(i, j)] = dist[(i, k)] + dist[(k, j)]
            
 
     firstGame.dist = dist
@@ -733,6 +739,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, numTraining = 0
         game = rules.newGame( layout, pacman, ghosts, gameDisplay, beQuiet, catchExceptions)
         game.dist = dist
         game.adj_list = adj_list
+        game.alg = alg
         game.sight = sight
         game.run()
         if not beQuiet: games.append(game)
@@ -768,6 +775,12 @@ if __name__ == '__main__':
     > python pacman.py --help
     """
     args = readCommand( sys.argv[1:] ) # Get game components based on input
+
+    print args
+
+    #changed line 577,578
+
+
     runGames( **args )
 
     # import cProfile

@@ -106,9 +106,9 @@ class ReflexAgent(Agent):
 
     def mindistance():
       minimum = float("inf")
-      for food in currentGameState.getFood().asList():
-        minimum = min(minimum, util.manhattanDistance(pos, food))
-      return -min(minimum, 50)
+      for ghostposition in currentGameState.getGhostPositions():
+        minimum = min(minimum, state.dist[(pos, ghostposition)])
+      return min(minimum, 10)
 
     return 10*currentGameState.getScore() + 5*mindistance()
 
