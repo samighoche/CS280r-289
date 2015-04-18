@@ -148,7 +148,10 @@ class OneGhost(GhostAgent):
             value = evaluate_joint_action(jointAction, state, depth)
             if value > bestJointActionValue:
                 bestJointActionValue = value
-                bestJointAction = jointAction
+                bestJointActions = []
+                bestJointActions.append(jointAction)
+            elif value == bestJointActionValue:
+                bestJointActions.append(jointAction)                
 
             # if value(jointAction) > bestJointActionValue:
             #     bestJointActionValue = value(jointAction)
@@ -156,12 +159,14 @@ class OneGhost(GhostAgent):
             # elif value(jointAction) == bestJointActionValue:
             #     compare
         
-
+        bestJointAction = random.choice(bestJointActions)
         # jointAction = {}
         
         # for i in xrange(1, numGhosts+1):
         #     jointAction[i] = 'Stop'
         #print "bestJointAction is : ", bestJointAction
+
+
         return bestJointAction
 
     def getDistribution(self, state):
