@@ -573,6 +573,8 @@ class Game:
 
         ###self.display.initialize(self.state.makeObservation(1).data)
         # inform learning agents of the game start
+
+
         for i in range(len(self.agents)):
             agent = self.agents[i]
             if not agent:
@@ -616,6 +618,14 @@ class Game:
             agent = self.agents[agentIndex]
             move_time = 0
             skip_action = False
+
+            counter = -1
+
+            if self.alg == "alg1" and (agentIndex is not 0):
+                if self.numMoves != counter:
+                    jointActions = agent.assignJointActions(observation)
+                    counter += 1
+
             # Generate an observation of the state
             if 'observationFunction' in dir( agent ):
                 self.mute(agentIndex)
@@ -686,8 +696,13 @@ class Game:
                 observation.dist = self.dist
                 observation.adj_list = self.adj_list
                 observation.sight = self.sight
-                action = agent.getAction(observation)
+                if self.alg == 'alg1' and (agentIndex is not 0):
+                    action = jointActions[agentIndex]
+                    print agentIndex
+                else:
+                    action = agent.getAction(observation)
             self.unmute()
+
 
             # Execute the action
             self.moveHistory.append( (agentIndex, action) )
@@ -710,7 +725,9 @@ class Game:
             # Allow for game specific conditions (winning, losing, etc.)
             self.rules.process(self.state, self)
             # Track progress
-            if agentIndex == numAgents + 1: self.numMoves += 1
+            if agentIndex == numAgents + 1: 
+                self.numMoves += 1
+
             # Next agent
             agentIndex = ( agentIndex + 1 ) % numAgents
 

@@ -44,6 +44,22 @@ class RandomGhost( GhostAgent ):
         return dist
 
 
+class OneGhost(GhostAgent):
+
+    def assignJointActions(self, state, depth=2):
+        pacmanPosition = state.getPacmanPosition()
+        #pos = state.getGhostPosition( self.index )
+        allGhostPositions = state.getGhostPositions()
+        numGhosts = len(allGhostPositions)
+        jointActions = {}
+        
+        for i in xrange(1, numGhosts+1):
+            jointActions[i] = 'Stop'
+        return jointActions
+
+    def getDistribution(self, state):
+        raise Exception("This should never come up")
+
 
 class FiveGhost( GhostAgent):
     "A ghost that takes into account other ghosts positions and tries to trap pacman."
@@ -81,6 +97,7 @@ class FiveGhost( GhostAgent):
                 newpos = (ghostposition[0], ghostposition[1]-1)
                 if manhattanDistance(newpos, pacmanPosition) <= depth:
                     removedPos.add(newpos)
+            #check right        
             if ghostposition[1] < M-1:
                 newpos = (ghostposition[0], ghostposition[1]+1)
                 if manhattanDistance(newpos, pacmanPosition) <= depth:

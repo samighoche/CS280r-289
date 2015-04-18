@@ -725,6 +725,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg, numTrainin
                     break
 
     firstGame.sight = sight
+    firstGame.alg = alg
 
     for i in range( numGames ):
         beQuiet = i < numTraining
@@ -776,7 +777,7 @@ if __name__ == '__main__':
     """
     args = readCommand( sys.argv[1:] ) # Get game components based on input
 
-    print args
+    #print args
 
     #changed line 577,578
 
