@@ -697,7 +697,7 @@ class Game:
                 observation.sight = self.sight
                 if self.alg == 'alg1' and (agentIndex is not 0):
                     action = jointActions[agentIndex]
-                    print agentIndex
+                    # print agentIndex
                 else:
                     action = agent.getAction(observation)
             self.unmute()

@@ -103,14 +103,13 @@ class ReflexAgent(Agent):
     # return 2*successorGameState.getScore() + 5*mindistance() + 100*eatingscore() + 10*stopscore()
 
     pos = currentGameState.getPacmanPosition()
-
     def mindistance():
       minimum = float("inf")
       for ghostposition in currentGameState.getGhostPositions():
         minimum = min(minimum, state.dist[(pos, ghostposition)])
-      return min(minimum, 10)
-
-    return 10*currentGameState.getScore() + 5*mindistance()
+      return min(minimum, 50)
+    print "this happened"
+    return 10*currentGameState.getScore() + 50*mindistance()
 
 
 def scoreEvaluationFunction(currentGameState):
@@ -226,6 +225,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
     "*** YOUR CODE HERE ***"
     def maxValue(state, alpha, beta, depth):
       if depth == 0 or state.isWin() or state.isLose():
+        # print self.evaluationFunction(state)
         return self.evaluationFunction(state)
       v = float("-inf")
       legalActions = state.getLegalActions(0)
@@ -363,14 +363,13 @@ def betterEvaluationFunction(currentGameState):
   '''
 
   pos = currentGameState.getPacmanPosition()
-
   def mindistance():
     minimum = float("inf")
-    for food in currentGameState.getFood().asList():
-      minimum = min(minimum, util.manhattanDistance(pos, food))
-    return -min(minimum, 50)
-
-  return 10*currentGameState.getScore() + 5*mindistance()
+    for ghostposition in currentGameState.getGhostPositions():
+      minimum = min(minimum, util.manhattanDistance(pos, ghostposition))
+    return min(minimum, 50)
+  # print "this happened"
+  return 10*currentGameState.getScore() + 50*mindistance()
 
 # Abbreviation
 better = betterEvaluationFunction
@@ -432,7 +431,7 @@ class ContestAgent(MultiAgentSearchAgent):
     maxv = float("-inf")
     legalActions = gameState.getLegalActions(0)
     for a in legalActions:
-      v = minValue(gameState.generateSuccessor(0, a), float("-inf"), float("inf"), 4, 1)
+      v = minValue(gameState.generateSuccessor(0, a), float("-inf"), float("inf"), self.depth, 1)
       if maxv < v:
         maxv = v
         action = a

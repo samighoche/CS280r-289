@@ -44,6 +44,27 @@ class RandomGhost( GhostAgent ):
         return dist
 
 
+N_ACTIONS = 5
+actions = ['East', 'West', 'North', 'South', 'Stop']
+def get_all_joint_actions(n):
+    index = [0 for i in range(n)]
+    joint_actions = []
+    while True:
+        joint_action = [0 for i in range(n)]
+        for i in range(n):
+            joint_action[i] = actions[index[i]]
+        joint_actions.append(joint_action)
+        i = n-1
+        while True:
+            if i < 0:
+                return joint_actions
+            index[i] += 1
+            if index[i] == N_ACTIONS:
+                index[i] = 0
+                i -= 1
+            else:
+                break
+
 class OneGhost(GhostAgent):
 
     def assignJointActions(self, state, depth=2):
@@ -51,11 +72,25 @@ class OneGhost(GhostAgent):
         #pos = state.getGhostPosition( self.index )
         allGhostPositions = state.getGhostPositions()
         numGhosts = len(allGhostPositions)
+        jointActions = get_all_joint_actions(numGhosts)
+        bestJointAction = None
+        bestJointActionValue = float("-inf")
+        for jointAction in jointActions:
+            if value(jointAction) > bestJointActionValue:
+                bestJointActionValue = value(jointAction)
+                bestJointAction = jointAction
+            elif value(jointAction) == bestJointActionValue:
+                compare
+        
+
+
+
+
         jointActions = {}
         
         for i in xrange(1, numGhosts+1):
-            jointActions[i] = 'Stop'
-        return jointActions
+            jointAction[i] = 'Stop'
+        return jointAction
 
     def getDistribution(self, state):
         raise Exception("This should never come up")
