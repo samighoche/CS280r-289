@@ -696,7 +696,7 @@ class Game:
                 observation.adj_list = self.adj_list
                 observation.sight = self.sight
                 if self.alg == 'alg1' and (agentIndex is not 0):
-                    action = jointActions[agentIndex]
+                    action = jointActions[agentIndex-1]
                     # print agentIndex
                 else:
                     action = agent.getAction(observation)
