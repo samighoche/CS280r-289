@@ -46,10 +46,69 @@ class RandomGhost( GhostAgent ):
 
 
 
+def evaluate_joint_action(jointAction, state, depth):
+    walls = list(state.getWalls())
+    N = len(walls)
+    M = len(walls[0])
+
+    pacmanPosition = state.getPacmanPosition()
+    #pos = state.getGhostPosition( self.index )
+    removedPos = set()
+    allGhostPositions = state.getGhostPositions()
+
+    for i in xrange(len(jointAction)):
+
+        if(jointAction[i] == 'East'):
+            allGhostPositions[i] = (allGhostPositions[i][0]+1, allGhostPositions[i][1])
+        elif(jointAction[i] == 'West'):
+            allGhostPositions[i] = (allGhostPositions[i][0]-1, allGhostPositions[i][1])
+        if(jointAction[i] == 'North'):
+            allGhostPositions[i] = (allGhostPositions[i][0], allGhostPositions[i][1]+1)
+        elif(jointAction[i] == 'South'):
+            allGhostPositions[i] = (allGhostPositions[i][0], allGhostPositions[i][1]-1)
+
+    #CALCULATE AREA REMOVED BY THESE GHOST POSITIONS
+    #AND RUNNING LIST OF DISTANCES
+
+    dist_to_Pacman = []
+
+    for ghostposition in allGhostPositions:
+        # check current
+        dist_to_Pacman.append(state.dist[(ghostposition, pacmanPosition)])
+        #dist_to_Pacman.append(manhattanDistance(ghostposition, pacmanPosition))
+        if manhattanDistance(ghostposition, pacmanPosition) <= depth:
+            removedPos.add(ghostposition)
+        # check top
+        if ghostposition[0] > 0:
+            newpos = (ghostposition[0]-1, ghostposition[1])
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        # check bottom
+        if ghostposition[0] < N-1:
+            newpos = (ghostposition[0]+1, ghostposition[1])
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        # check left
+        if ghostposition[1] > 0:
+            newpos = (ghostposition[0], ghostposition[1]-1)
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        #check right        
+        if ghostposition[1] < M-1:
+            newpos = (ghostposition[0], ghostposition[1]+1)
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+
+    averageDistance = float(sum(dist_to_Pacman))/(len(dist_to_Pacman))
+
+    return len(removedPos) - averageDistance
+
+
+
+
 class OneGhost(GhostAgent):
 
-
-    def get_all_joint_actions(n, state):
+    def get_all_joint_actions(self, n, state):
         N_ACTIONS = 5
         possibleactions = ['East', 'West', 'North', 'South', 'Stop']
         index = [0 for i in range(n)]
@@ -75,30 +134,34 @@ class OneGhost(GhostAgent):
                 else:
                     break
 
-    def assignJointActions(self, state, depth=2):
+
+    def assignJointActions(self, state, depth=3):
         pacmanPosition = state.getPacmanPosition()
         #pos = state.getGhostPosition( self.index )
         allGhostPositions = state.getGhostPositions()
         numGhosts = len(allGhostPositions)
-        jointActions = get_all_joint_actions(numGhosts, state)
+        jointActions = self.get_all_joint_actions(numGhosts, state)
         bestJointAction = None
         bestJointActionValue = float("-inf")
         for jointAction in jointActions:
-            if value(jointAction) > bestJointActionValue:
-                bestJointActionValue = value(jointAction)
+            value = evaluate_joint_action(jointAction, state, depth)
+            if value > bestJointActionValue:
+                bestJointActionValue = value
                 bestJointAction = jointAction
-            elif value(jointAction) == bestJointActionValue:
-                compare
+
+            # if value(jointAction) > bestJointActionValue:
+            #     bestJointActionValue = value(jointAction)
+            #     bestJointAction = jointAction
+            # elif value(jointAction) == bestJointActionValue:
+            #     compare
         
 
-
-
-
-        jointActions = {}
+        # jointAction = {}
         
-        for i in xrange(1, numGhosts+1):
-            jointAction[i] = 'Stop'
-        return jointAction
+        # for i in xrange(1, numGhosts+1):
+        #     jointAction[i] = 'Stop'
+        #print "bestJointAction is : ", bestJointAction
+        return bestJointAction
 
     def getDistribution(self, state):
         raise Exception("This should never come up")
