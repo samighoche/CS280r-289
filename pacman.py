@@ -725,6 +725,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg, numTrainin
                     break
 
     firstGame.sight = sight
+    firstGame.alg = alg
 
     for i in range( numGames ):
         beQuiet = i < numTraining
