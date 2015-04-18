@@ -570,7 +570,7 @@ class Game:
         """
         self.display.initialize(self.state.data)
         self.numMoves = 0
-
+        print self.alg
         ###self.display.initialize(self.state.makeObservation(1).data)
         # inform learning agents of the game start
         for i in range(len(self.agents)):
@@ -610,7 +610,6 @@ class Game:
 
         agentIndex = self.startingIndex
         numAgents = len( self.agents )
-
         while not self.gameOver:
             # Fetch the next agent
             agent = self.agents[agentIndex]

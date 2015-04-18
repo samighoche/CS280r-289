@@ -776,7 +776,6 @@ if __name__ == '__main__':
     """
     args = readCommand( sys.argv[1:] ) # Get game components based on input
 
-    print args
 
     #changed line 577,578
 
