@@ -652,6 +652,9 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
     adj_list = {}
     N = len(walls)
     M = len(walls[0])
+    print "N ", N
+    print "M ", M
+    print walls
     for i in range(0,N):
         for j in range(0,M):
             if not walls[i][j]:
