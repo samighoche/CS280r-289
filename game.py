@@ -724,7 +724,7 @@ class Game:
                 self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 1
             print "actions applied"
             # DEBUG
-            print self.trail   
+            # print self.trail   
 
             # Change the display
             self.display.update( self.state.data )
