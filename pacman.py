@@ -100,7 +100,7 @@ class GameState:
 
         # Copy current state
         state = GameState(self)
-
+        state.trail = self.trail
         # Let agent's logic deal with its action's effects on the board
         if agentIndex == 0:  # Pacman is moving
             state.data._eaten = [False for i in range(state.getNumAgents())]
@@ -725,6 +725,17 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
                     break
 
     firstGame.sight = sight
+    """
+    Initialize trail for stigmergy.  
+    """
+    trail = [[1 for x in range(M)] for x in range(N)] 
+    print walls
+    print trail
+    firstGame.trail = trail
+
+    firstGame.sight = sight
+
+
     firstGame.alg = alg
 
     for i in range( numGames ):
@@ -742,6 +753,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
         game.adj_list = adj_list
         game.alg = alg
         game.sight = sight
+        game.trail = trail
         game.run()
         if not beQuiet: games.append(game)
 
