@@ -135,7 +135,7 @@ class OneGhost(GhostAgent):
                     break
 
 
-    def assignJointActions(self, state, depth=3):
+    def assignJointActions(self, state, depth=4):
         pacmanPosition = state.getPacmanPosition()
         #pos = state.getGhostPosition( self.index )
         allGhostPositions = state.getGhostPositions()
@@ -157,8 +157,11 @@ class OneGhost(GhostAgent):
             #     bestJointAction = jointAction
             # elif value(jointAction) == bestJointActionValue:
             #     compare
-        
-        bestJointAction = random.choice(bestJointActions)
+        bestProb = 0.95
+        distribution = util.Counter()
+        for a in bestJointActions: distribution[tuple(a)] = bestProb / len(bestJointActions)
+        for a in jointActions: distribution[tuple(a)] += ( 1-bestProb ) / len(jointActions)
+
         # jointAction = {}
         
         # for i in xrange(1, numGhosts+1):
@@ -166,7 +169,7 @@ class OneGhost(GhostAgent):
         #print "bestJointAction is : ", bestJointAction
 
 
-        return bestJointAction
+        return list(util.chooseFromDistribution( distribution ))
 
     def getDistribution(self, state):
         raise Exception("This should never come up")
@@ -292,7 +295,7 @@ class FiveGhost( GhostAgent):
 
 class DirectionalGhost( GhostAgent ):
     "A ghost that prefers to rush Pacman, or flee when scared."
-    def __init__( self, index, prob_attack=0.8, prob_scaredFlee=0.8 ):
+    def __init__( self, index, prob_attack=0.9, prob_scaredFlee=0.8 ):
         self.index = index
         self.prob_attack = prob_attack
         self.prob_scaredFlee = prob_scaredFlee
@@ -310,7 +313,7 @@ class DirectionalGhost( GhostAgent ):
         actionVectors = [Actions.directionToVector( a, speed ) for a in legalActions]
         newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
         pacmanPosition = state.getPacmanPosition()
-        print pacmanPosition
+        # print pacmanPosition
         # print state.dist[((pos[0]+1, pos[1]), pacmanPosition)]
         # Select best actions given the state
         distancesToPacman = [state.dist[( pos, pacmanPosition )] for pos in newPositions]
