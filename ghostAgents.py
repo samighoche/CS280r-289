@@ -44,53 +44,132 @@ class RandomGhost( GhostAgent ):
         return dist
 
 
-N_ACTIONS = 5
-actions = ['East', 'West', 'North', 'South', 'Stop']
-def get_all_joint_actions(n):
-    index = [0 for i in range(n)]
-    joint_actions = []
-    while True:
-        joint_action = [0 for i in range(n)]
-        for i in range(n):
-            joint_action[i] = actions[index[i]]
-        joint_actions.append(joint_action)
-        i = n-1
-        while True:
-            if i < 0:
-                return joint_actions
-            index[i] += 1
-            if index[i] == N_ACTIONS:
-                index[i] = 0
-                i -= 1
-            else:
-                break
+
+
+def evaluate_joint_action(jointAction, state, depth):
+    walls = list(state.getWalls())
+    N = len(walls)
+    M = len(walls[0])
+
+    pacmanPosition = state.getPacmanPosition()
+    #pos = state.getGhostPosition( self.index )
+    removedPos = set()
+    allGhostPositions = state.getGhostPositions()
+
+    for i in xrange(len(jointAction)):
+
+        if(jointAction[i] == 'East'):
+            allGhostPositions[i] = (allGhostPositions[i][0]+1, allGhostPositions[i][1])
+        elif(jointAction[i] == 'West'):
+            allGhostPositions[i] = (allGhostPositions[i][0]-1, allGhostPositions[i][1])
+        if(jointAction[i] == 'North'):
+            allGhostPositions[i] = (allGhostPositions[i][0], allGhostPositions[i][1]+1)
+        elif(jointAction[i] == 'South'):
+            allGhostPositions[i] = (allGhostPositions[i][0], allGhostPositions[i][1]-1)
+
+    #CALCULATE AREA REMOVED BY THESE GHOST POSITIONS
+    #AND RUNNING LIST OF DISTANCES
+
+    dist_to_Pacman = []
+
+    for ghostposition in allGhostPositions:
+        # check current
+        dist_to_Pacman.append(state.dist[(ghostposition, pacmanPosition)])
+        #dist_to_Pacman.append(manhattanDistance(ghostposition, pacmanPosition))
+        if manhattanDistance(ghostposition, pacmanPosition) <= depth:
+            removedPos.add(ghostposition)
+        # check top
+        if ghostposition[0] > 0:
+            newpos = (ghostposition[0]-1, ghostposition[1])
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        # check bottom
+        if ghostposition[0] < N-1:
+            newpos = (ghostposition[0]+1, ghostposition[1])
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        # check left
+        if ghostposition[1] > 0:
+            newpos = (ghostposition[0], ghostposition[1]-1)
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        #check right        
+        if ghostposition[1] < M-1:
+            newpos = (ghostposition[0], ghostposition[1]+1)
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+
+    averageDistance = float(sum(dist_to_Pacman))/(len(dist_to_Pacman))
+
+    return len(removedPos) - averageDistance
+
+
+
 
 class OneGhost(GhostAgent):
 
-    def assignJointActions(self, state, depth=2):
+    def get_all_joint_actions(self, n, state):
+        N_ACTIONS = 5
+        possibleactions = ['East', 'West', 'North', 'South', 'Stop']
+        index = [0 for i in range(n)]
+        joint_actions = []
+        while True:
+            joint_action = [0 for i in range(n)]
+            for i in range(n):
+                joint_action[i] = possibleactions[index[i]]
+            addjointaction = True
+            for ghostindex in range(n):
+                if joint_action[ghostindex] not in state.getLegalActions( ghostindex+1 ):
+                    addjointaction = False
+            if addjointaction:
+                joint_actions.append(joint_action)
+            i = n-1
+            while True:
+                if i < 0:
+                    return joint_actions
+                index[i] += 1
+                if index[i] == N_ACTIONS:
+                    index[i] = 0
+                    i -= 1
+                else:
+                    break
+
+
+    def assignJointActions(self, state, depth=4):
         pacmanPosition = state.getPacmanPosition()
         #pos = state.getGhostPosition( self.index )
         allGhostPositions = state.getGhostPositions()
         numGhosts = len(allGhostPositions)
-        jointActions = get_all_joint_actions(numGhosts)
+        jointActions = self.get_all_joint_actions(numGhosts, state)
         bestJointAction = None
         bestJointActionValue = float("-inf")
         for jointAction in jointActions:
-            if value(jointAction) > bestJointActionValue:
-                bestJointActionValue = value(jointAction)
-                bestJointAction = jointAction
-            elif value(jointAction) == bestJointActionValue:
-                compare
+            value = evaluate_joint_action(jointAction, state, depth)
+            if value > bestJointActionValue:
+                bestJointActionValue = value
+                bestJointActions = []
+                bestJointActions.append(jointAction)
+            elif value == bestJointActionValue:
+                bestJointActions.append(jointAction)                
+
+            # if value(jointAction) > bestJointActionValue:
+            #     bestJointActionValue = value(jointAction)
+            #     bestJointAction = jointAction
+            # elif value(jointAction) == bestJointActionValue:
+            #     compare
+        bestProb = 0.95
+        distribution = util.Counter()
+        for a in bestJointActions: distribution[tuple(a)] = bestProb / len(bestJointActions)
+        for a in jointActions: distribution[tuple(a)] += ( 1-bestProb ) / len(jointActions)
+
+        # jointAction = {}
         
+        # for i in xrange(1, numGhosts+1):
+        #     jointAction[i] = 'Stop'
+        #print "bestJointAction is : ", bestJointAction
 
 
-
-
-        jointActions = {}
-        
-        for i in xrange(1, numGhosts+1):
-            jointAction[i] = 'Stop'
-        return jointAction
+        return list(util.chooseFromDistribution( distribution ))
 
     def getDistribution(self, state):
         raise Exception("This should never come up")
@@ -216,7 +295,7 @@ class FiveGhost( GhostAgent):
 
 class DirectionalGhost( GhostAgent ):
     "A ghost that prefers to rush Pacman, or flee when scared."
-    def __init__( self, index, prob_attack=0.8, prob_scaredFlee=0.8 ):
+    def __init__( self, index, prob_attack=0.9, prob_scaredFlee=0.8 ):
         self.index = index
         self.prob_attack = prob_attack
         self.prob_scaredFlee = prob_scaredFlee
@@ -234,7 +313,8 @@ class DirectionalGhost( GhostAgent ):
         actionVectors = [Actions.directionToVector( a, speed ) for a in legalActions]
         newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
         pacmanPosition = state.getPacmanPosition()
-
+        # print pacmanPosition
+        # print state.dist[((pos[0]+1, pos[1]), pacmanPosition)]
         # Select best actions given the state
         distancesToPacman = [state.dist[( pos, pacmanPosition )] for pos in newPositions]
 

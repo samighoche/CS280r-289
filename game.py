@@ -570,7 +570,7 @@ class Game:
         """
         self.display.initialize(self.state.data)
         self.numMoves = 0
-        print self.alg
+        # print self.alg
         ###self.display.initialize(self.state.makeObservation(1).data)
         # inform learning agents of the game start
 
@@ -697,7 +697,7 @@ class Game:
                 observation.sight = self.sight
                 observation.trail = self.trail
                 if self.alg == 'alg1' and (agentIndex is not 0):
-                    action = jointActions[agentIndex]
+                    action = jointActions[agentIndex-1]
                     # print agentIndex
                 else:
                     action = agent.getAction(observation)
