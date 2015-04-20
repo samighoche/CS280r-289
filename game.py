@@ -620,7 +620,7 @@ class Game:
 
             counter = -1
 
-            if self.alg == "alg1" and (agentIndex is not 0):
+            if (self.alg == "alg1" or self.alg == 'alg2') and (agentIndex is not 0):
                 if self.numMoves != counter:
                     jointActions = agent.assignJointActions(observation)
                     counter += 1
@@ -696,7 +696,7 @@ class Game:
                 observation.adj_list = self.adj_list
                 observation.sight = self.sight
                 observation.trail = self.trail
-                if self.alg == 'alg1' and (agentIndex is not 0):
+                if (self.alg == 'alg1' or self.alg == 'alg2') and (agentIndex is not 0):
                     action = jointActions[agentIndex-1]
                     # print agentIndex
                 else:
