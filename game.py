@@ -705,7 +705,7 @@ class Game:
 
             # Execute the action
             self.state.trail = self.trail   
-            print "start actions"
+            #print "start actions"
             self.moveHistory.append( (agentIndex, action) )
             if self.catchExceptions:
                 try:
@@ -722,7 +722,7 @@ class Game:
             ghostPositions = self.state.getGhostPositions()
             for (x,y) in ghostPositions :
                 self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 1
-            print "actions applied"
+            #print "actions applied"
             # DEBUG
             # print self.trail   
 
