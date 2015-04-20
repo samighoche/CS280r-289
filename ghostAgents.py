@@ -195,6 +195,7 @@ class TwoGhost(GhostAgent):
 
     def get_all_joint_actions(self, team, state):
         N_ACTIONS = 5
+        n = len(team)
         possibleactions = ['East', 'West', 'North', 'South', 'Stop']
         index = [0 for i in range(n)]
         joint_actions = []
@@ -204,7 +205,7 @@ class TwoGhost(GhostAgent):
                 joint_action[i] = possibleactions[index[i]]
             addjointaction = True
             for ghostindex in range(n):
-                if joint_action[ghostindex] not in state.getLegalActions( ghostindex+1 ):
+                if joint_action[ghostindex] not in state.getLegalActions( team[ghostindex]+1 ):
                     addjointaction = False
             if addjointaction:
                 joint_actions.append(joint_action)
@@ -314,8 +315,6 @@ class TwoGhost(GhostAgent):
         #get_all_joint_actions should return a list of dictionaries. 
         #evaluate_joint_action
 
-
->>>>>>> 8b676a2e46b1ea2e88efa10fa41878b6d6537783
 
     def getDistribution(self, state):
         raise Exception("This should never come up")

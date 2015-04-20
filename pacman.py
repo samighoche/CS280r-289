@@ -122,6 +122,7 @@ class GameState:
         state.data.score += state.data.scoreChange
         GameState.explored.add(self)
         GameState.explored.add(state)
+        # state.dist = self.dist
         return state
 
     def getLegalPacmanActions( self ):
@@ -730,8 +731,6 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
     Initialize trail for stigmergy.  
     """
     trail = [[1 for x in range(M)] for x in range(N)] 
-    print walls
-    print trail
     firstGame.trail = trail
 
     firstGame.sight = sight
