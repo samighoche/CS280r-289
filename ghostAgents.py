@@ -355,29 +355,29 @@ class StigmergyGhost( GhostAgent):
         trailValues = {}
 
         for nPos in newPositions :
+            if nPos == pos :
+                print "equal"
+                continue
             trailValues[nPos] = trail[int(nPos[0])][int(nPos[1])]
 
-        print trailValues
-
-        print "calculating total value"
         totalValue = 0
         for (a,b), value in trailValues.iteritems() :
-            print value
             totalValue += value
-            print totalValue
 
-        print "total value"
-        print totalValue
 
 
         # Construct distribution
         dist = util.Counter()
-        print "Position"
         for a in legalActions :
             actionVector = Actions.directionToVector( a, 1 )
             newPosition = ( pos[0]+actionVector[0], pos[1]+actionVector[1] )
-            dist[a] = ( totalValue-trailValues[newPosition] ) / float(totalValue)
-        print dist
+            if newPosition == pos :
+                continue 
+            else :
+                if(totalValue == trailValues[newPosition]) :
+                    dist[a] = 1
+                else:
+                    dist[a] = ( totalValue-trailValues[newPosition] ) / float(2 *totalValue)
         dist.normalize()
 
         return dist

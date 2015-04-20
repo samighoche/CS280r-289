@@ -721,7 +721,7 @@ class Game:
             # Update trails based on ghosts current position.
             ghostPositions = self.state.getGhostPositions()
             for (x,y) in ghostPositions :
-                self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 1
+                self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 50
             print "actions applied"
             # DEBUG
             # print self.trail   
