@@ -620,7 +620,7 @@ class Game:
 
             counter = -1
 
-            if self.alg == "alg1" and (agentIndex is not 0):
+            if (self.alg == "alg1" or self.alg == 'alg2') and (agentIndex is not 0):
                 if self.numMoves != counter:
                     jointActions = agent.assignJointActions(observation)
                     counter += 1
@@ -695,15 +695,17 @@ class Game:
                 observation.dist = self.dist
                 observation.adj_list = self.adj_list
                 observation.sight = self.sight
-                if self.alg == 'alg1' and (agentIndex is not 0):
+                observation.trail = self.trail
+                if (self.alg == 'alg1' or self.alg == 'alg2') and (agentIndex is not 0):
                     action = jointActions[agentIndex-1]
                     # print agentIndex
                 else:
                     action = agent.getAction(observation)
             self.unmute()
 
-
             # Execute the action
+            self.state.trail = self.trail   
+            print "start actions"
             self.moveHistory.append( (agentIndex, action) )
             if self.catchExceptions:
                 try:
@@ -715,6 +717,14 @@ class Game:
                     return
             else:
                 self.state = self.state.generateSuccessor( agentIndex, action )
+
+            # Update trails based on ghosts current position.
+            ghostPositions = self.state.getGhostPositions()
+            for (x,y) in ghostPositions :
+                self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 1
+            print "actions applied"
+            # DEBUG
+            # print self.trail   
 
             # Change the display
             self.display.update( self.state.data )
