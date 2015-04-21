@@ -142,7 +142,7 @@ class OneGhost(GhostAgent):
         numGhosts = len(allGhostPositions)
         jointActions = self.get_all_joint_actions(numGhosts, state)
 
-        print jointActions
+        #print jointActions
 
         bestJointAction = None
         bestJointActionValue = float("-inf")
@@ -189,6 +189,7 @@ class TwoGhost(GhostAgent):
 
     def get_all_joint_actions(self, team, state):
         N_ACTIONS = 5
+        n = len(team)
         possibleactions = ['East', 'West', 'North', 'South', 'Stop']
         index = [0 for i in range(n)]
         joint_actions = []
@@ -198,7 +199,7 @@ class TwoGhost(GhostAgent):
                 joint_action[i] = possibleactions[index[i]]
             addjointaction = True
             for ghostindex in range(n):
-                if joint_action[ghostindex] not in state.getLegalActions( ghostindex+1 ):
+                if joint_action[ghostindex] not in state.getLegalActions( team[ghostindex]+1 ):
                     addjointaction = False
             if addjointaction:
                 joint_actions.append(joint_action)
@@ -215,7 +216,7 @@ class TwoGhost(GhostAgent):
 
 
 
-    def evaluate_joint_action(jointAction, team, state, depth):
+    def evaluate_joint_action(self, jointAction, team, state, depth):
         walls = list(state.getWalls())
         N = len(walls)
         M = len(walls[0])
@@ -278,8 +279,6 @@ class TwoGhost(GhostAgent):
 
 
 
-
-
     def assignJointActions(self, state, numTeams=2, depth=4):
         pacmanPosition = state.getPacmanPosition()
         #pos = state.getGhostPosition( self.index )
@@ -288,21 +287,35 @@ class TwoGhost(GhostAgent):
         GhostIndexes = [i for i in xrange(numGhosts)]
         teams = splitIntoTeams(GhostIndexes, numTeams)
 
-        bestPolicy = {}
+        correctJointAction = {}
+
+        supervisor = {}
+
+        for i in xrange(len(teams)):
+            for j in xrange(len(teams[i])):
+                supervisor[teams[i][j]] = (i, j) 
+
+        bestJointActions = []
         for team in teams:
             bestJointAction = None
             bestJointActionValue = float("-inf")
             jointActions = self.get_all_joint_actions(team, state)
             for jointAction in jointActions:
-                val = self.evaluate_joint_action(team, state, depth)
+                val = self.evaluate_joint_action(jointAction, team, state, depth)
                 if val > bestJointActionValue:
                     bestJointActionValue = val
                     bestJointAction = jointAction
-            for j in jointAction.keys():
-                bestPolicy[j] = jointAction[j]
+            bestJointActions.append(bestJointAction)
+
+        for i in supervisor.keys():
+            #print supervisor[i][0]
+            #print supervisor[i][1]
+            #print bestJointActions
+            correctJointAction[i] = bestJointActions[supervisor[i][0]][supervisor[i][1]]
 
 
-        return bestPolicy
+        return correctJointAction
+        #return bestPolicy
 
         #To be implemented..
         #get_all_joint_actions should return a list of dictionaries. 
