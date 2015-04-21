@@ -719,9 +719,16 @@ class Game:
                 self.state = self.state.generateSuccessor( agentIndex, action )
 
             # Update trails based on ghosts current position.
-            ghostPositions = self.state.getGhostPositions()
-            for (x,y) in ghostPositions :
-                self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 50
+            ghosts = self.state.getGhostStates()
+
+            for ghost in ghosts :
+                print dir(ghost)
+                (x,y) = ghost.getPosition()
+                pacmanPos = self.state.getPacmanPosition()
+                if not ghost.isPacman and self.sight[(ghost.getPosition(), pacmanPos)]:
+                    self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 50
+                else :
+                    self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 25                    
 
             # Change the display
             self.display.update( self.state.data )

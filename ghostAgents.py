@@ -498,36 +498,52 @@ class StigmergyGhost( GhostAgent):
         legalActions = state.getLegalActions( self.index )
         pos = state.getGhostPosition( self.index )
         trail = state.trail
+        pacmanPosition = state.getPacmanPosition()
 
-        # Extract trail values
-        actionVectors = [Actions.directionToVector( a, 1 ) for a in legalActions]       
-        newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
-        
-        trailValues = {}
-
-        for nPos in newPositions :
-            if nPos == pos :
-                print "equal"
-                continue
-            trailValues[nPos] = trail[int(nPos[0])][int(nPos[1])]
-
-        totalValue = 0
-        for (a,b), value in trailValues.iteritems() :
-            totalValue += value
-
-        # Construct distribution
+        # See if pacman is in sight.
         dist = util.Counter()
-        for a in legalActions :
-            actionVector = Actions.directionToVector( a, 1 )
-            newPosition = ( pos[0]+actionVector[0], pos[1]+actionVector[1] )
-            if newPosition == pos :
-                continue 
-            else :
-                if(totalValue == trailValues[newPosition]) :
-                    dist[a] = 1
-                else:
-                    dist[a] = ( totalValue-trailValues[newPosition] ) / float(2 *totalValue)
+        if state.sight[(pos, pacmanPosition)] :
 
-        dist.normalize()
+            # Always chase pacman.
+            actionVectors = [Actions.directionToVector( a, 1 ) for a in legalActions]
+            newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
+            # print pacmanPosition
+            # print state.dist[((pos[0]+1, pos[1]), pacmanPosition)]
+            # Select best actions given the state
+            distancesToPacman = [state.dist[( pos, pacmanPosition )] for pos in newPositions]
+
+            bestScore = min( distancesToPacman )
+            bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
+            for a in bestActions: dist[a] = 1 / len(bestActions)
+
+        else :
+            # Extract trail values
+            actionVectors = [Actions.directionToVector( a, 1 ) for a in legalActions]       
+            newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
+            
+            trailValues = {}
+
+            for nPos in newPositions :
+                if nPos == pos :
+                    continue
+                trailValues[nPos] = trail[int(nPos[0])][int(nPos[1])]
+
+            totalValue = 0
+            for (a,b), value in trailValues.iteritems() :
+                totalValue += value
+
+            # Construct distribution
+            for a in legalActions :
+                actionVector = Actions.directionToVector( a, 1 )
+                newPosition = ( pos[0]+actionVector[0], pos[1]+actionVector[1] )
+                if newPosition == pos :
+                    continue 
+                else :
+                    if(totalValue == trailValues[newPosition]) :
+                        dist[a] = 1
+                    else:
+                        dist[a] = ( totalValue-trailValues[newPosition] ) / float(2 *totalValue)
+
+            dist.normalize()
 
         return dist
