@@ -328,6 +328,24 @@ class TwoGhost(GhostAgent):
 
 
 
+
+class ThreeGhost(GhostAgent):
+    def __init__(self, index):
+        self.index = index
+
+    def getThreeAction(self, ActionList, state):
+        if not ActionList:
+            return 'Stop'
+        else:
+            legalActions = state.getLegalActions(self.index)
+            return random.choice(legalActions)
+
+    def getDistribution(self, state):
+        raise Exception("This should never come up!")
+
+
+
+
 class FiveGhost( GhostAgent):
     "A ghost that takes into account other ghosts positions and tries to trap pacman."
     def __init__(self, index):

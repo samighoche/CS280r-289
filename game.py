@@ -612,6 +612,9 @@ class Game:
 
         agentIndex = self.startingIndex
         numAgents = len( self.agents )
+
+        runningActionsList = []
+
         while not self.gameOver:
             # Fetch the next agent
             agent = self.agents[agentIndex]
@@ -699,6 +702,9 @@ class Game:
                 if (self.alg == 'alg1' or self.alg == 'alg2') and (agentIndex is not 0):
                     action = jointActions[agentIndex-1]
                     # print agentIndex
+                elif (self.alg == 'alg3') and (agentIndex is not 0):
+                    action = agent.getThreeAction(runningActionsList, observation)
+                    runningActionsList.append(action)
                 else:
                     action = agent.getAction(observation)
             self.unmute()
@@ -734,9 +740,10 @@ class Game:
             # Allow for game specific conditions (winning, losing, etc.)
             self.rules.process(self.state, self)
             # Track progress
-            if agentIndex == numAgents + 1: 
-                self.numMoves += 1
 
+            if agentIndex == numAgents - 1: 
+                self.numMoves += 1
+                runningActionsList = []
             # Next agent
             agentIndex = ( agentIndex + 1 ) % numAgents
 
