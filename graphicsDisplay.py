@@ -201,6 +201,34 @@ class PacmanGraphics:
                 distx.append(block)
         self.distributionImages = dist
 
+    def drawTrails(self, trails):
+        dist = []
+        for x in range(len(trails)) :
+            distx = []
+            dist.append(distx)
+            for y in range(len(trails[0])) :
+                ( screen_x, screen_y ) = self.to_screen( (x, y) )
+                block = square( (screen_x, screen_y),
+                                0.5 * self.gridSize,
+                                color =  formatColor(0,0,0),
+                                filled = 1, behind=2)
+                distx.append(block)
+        self.distributionImages = dist
+
+
+    def updateTrails(self, trails) :
+        "Draws an agent's belief distributions"
+        maxValue = max(map(max,trails))
+        # copy all distributions so we don't change their state
+        for x in range(len(self.distributionImages)):
+            for y in range(len(self.distributionImages[0])):
+                image = self.distributionImages[x][y]
+                value = trails[x][y]
+                color = [value/maxValue,0,0]
+                changeColor(image, formatColor(*color))
+        refresh()                
+
+
     def drawStaticObjects(self, state):
         layout = self.layout
         self.drawWalls(layout.walls)
