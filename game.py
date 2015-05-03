@@ -575,6 +575,9 @@ class Game:
         ###self.display.initialize(self.state.makeObservation(1).data)
         # inform learning agents of the game start
 
+        # fname = open('results' + str(self.alg) + '.txt', 'a')
+        # timing = []
+
         for i in range(len(self.agents)):
             agent = self.agents[i]
             if not agent:
@@ -613,6 +616,14 @@ class Game:
 
         agentIndex = self.startingIndex
         numAgents = len( self.agents )
+
+        # runningActionsList = []
+
+        counter = -1
+        GameMoves = 0
+
+        # gameStartTime = time.clock()
+
         for N in range(len(self.trail)) :
                 for M in range(len(self.trail[0])) :
                     self.trail[N][M] = 0
@@ -622,11 +633,13 @@ class Game:
             move_time = 0
             skip_action = False
 
-            counter = -1
+
 
             if (self.alg == "alg1" or self.alg == 'alg2') and (agentIndex is not 0):
-                if self.numMoves != counter:
+                if GameMoves != counter:
+                    startTime = time.clock()
                     jointActions = agent.assignJointActions(observation)
+                    timing.append(time.clock() - startTime)
                     counter += 1
 
 
@@ -704,7 +717,19 @@ class Game:
                 if (self.alg == 'alg1' or self.alg == 'alg2') and (agentIndex is not 0):
                     action = jointActions[agentIndex-1]
                     # print agentIndex
+                elif (self.alg == 'alg3') and (agentIndex is not 0):
+                    startTime = time.clock()
+                    action = agent.getThreeAction(runningActionsList, observation)
+                    runningActionsList.append(action)
+                    timing.append(time.clock() - startTime)
                 else:
+                    # if agentIndex is not 0:
+                    #     startTime = time.clock()
+                    #     action = agent.getAction(observation)
+                    #     timing.append(time.clock() - startTime)
+                    # else:
+                    #     action = agent.getAction(observation)
+
                     action = agent.getAction(observation)
 
             self.unmute()
@@ -749,16 +774,26 @@ class Game:
             # Allow for game specific conditions (winning, losing, etc.)
             self.rules.process(self.state, self)
             # Track progress
-            if agentIndex == numAgents + 1: 
-                print "hahahas"
-                self.numMoves += 1
 
+            if agentIndex == numAgents - 1: 
+                self.numMoves += 1
+                GameMoves += 1
+                runningActionsList = []
             # Next agent
             agentIndex = ( agentIndex + 1 ) % numAgents
 
             if _BOINC_ENABLED:
                 boinc.set_fraction_done(self.getProgress())
 
+        average = float(sum(timing))/len(timing)
+        #fname.write(str(average) + '\n')
+
+        timeForGame = time.clock() - gameStartTime
+        #fname.write("The total time to run the games was : " + str(timeForGame) + '\n')
+
+        fname.write(str(average) + ',' + str(timeForGame) + '\n')
+        fname.close()
+        
         # inform a learning agent of the game result
         for agentIndex, agent in enumerate(self.agents):
             if "final" in dir( agent ) :
