@@ -719,7 +719,7 @@ class Game:
                     # print agentIndex
                 elif (self.alg == 'alg3') and (agentIndex is not 0):
                     startTime = time.clock()
-                    action = agent.getThreeAction(runningActionsList, observation)
+                    action = agent.getThreeAction(observation, runningActionsList)
                     runningActionsList.append(action)
                     timing.append(time.clock() - startTime)
                 else:

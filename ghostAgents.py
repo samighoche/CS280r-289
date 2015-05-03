@@ -422,7 +422,7 @@ class ThreeGhost( GhostAgent):
         N = len(walls)
         M = len(walls[0])
         for ghostposition in newPositions:
-            numRemovedOthers, removedPos = self.count_removed_from_others(state, depth)
+            numRemovedOthers, removedPos = self.count_removed_from_others(state, depth, list_of_ghost_actions)
             if manhattanDistance(ghostposition, pacmanPosition) <= depth:
                 removedPos.add(ghostposition)
             # check top
