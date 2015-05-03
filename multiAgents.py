@@ -207,6 +207,71 @@ class MinimaxAgent(MultiAgentSearchAgent):
         action = a
     return action
 
+class MinimaxAgentSight(MultiAgentSearchAgent):
+  """
+    Your minimax agent (question 2)
+  """
+
+  def getAction(self, gameState):
+    """
+      Returns the minimax action from the current gameState using self.depth
+      and self.evaluationFunction.
+
+      Here are some method calls that might be useful when implementing minimax.
+
+      gameState.getLegalActions(agentIndex):
+        Returns a list of legal actions for an agent
+        agentIndex=0 means Pacman, ghosts are >= 1
+
+      Directions.STOP:
+        The stop direction, which is always legal
+
+      gameState.generateSuccessor(agentIndex, action):
+        Returns the successor game state after an agent takes an action
+
+      gameState.getNumAgents():
+        Returns the total number of agents in the game
+    """
+    "*** YOUR CODE HERE ***"
+    '''
+    Standard minimax algorithm but the minvalue function that an additonal
+    argument for the ghostagent, the last ghostagent calls maxValue and 
+    all other ghostagents call minvalue again
+    We only go deeper when the last ghostagent calls maxValue
+    '''
+    def maxValue(state, depth):
+      if depth == 0 or state.isWin() or state.isLose():
+        return self.evaluationFunction(state)
+      v = float("-inf")
+      legalActions = state.getLegalActions(0)
+      for a in legalActions:
+        v = max(v, minValue(state.generateSuccessor(0, a), depth, 1))
+      return v
+
+    def minValue(state, depth, ghostAgent):
+      if depth == 0 or state.isWin() or state.isLose():
+        return self.evaluationFunction(state)
+      v = float("inf")
+      legalActions = state.getLegalActions(ghostAgent)
+      if ghostAgent == totalAgents-1:
+        for a in legalActions:
+          v = min(v, maxValue(state.generateSuccessor(ghostAgent, a), depth-1))
+      else:
+        for a in legalActions:
+          v = min(v, minValue(state.generateSuccessor(ghostAgent, a), depth, ghostAgent+1))
+      return v
+
+    totalAgents = gameState.getNumAgents()
+    action = Directions.STOP
+    maxv = float("-inf")
+    legalActions = gameState.getLegalActions(0)
+    for a in legalActions:
+      v = minValue(gameState.generateSuccessor(0, a), self.depth, 1)
+      if maxv < v:
+        maxv = v
+        action = a
+    return action    
+
 class AlphaBetaAgent(MultiAgentSearchAgent):
   """
     Your minimax agent with alpha-beta pruning (question 3)
