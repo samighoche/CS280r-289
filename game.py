@@ -569,11 +569,11 @@ class Game:
         Main control loop for game play.
         """
         self.display.initialize(self.state.data)
+        self.display.drawTrails(self.trail);
         self.numMoves = 0
         # print self.alg
         ###self.display.initialize(self.state.makeObservation(1).data)
         # inform learning agents of the game start
-
 
         for i in range(len(self.agents)):
             agent = self.agents[i]
@@ -610,8 +610,12 @@ class Game:
                 ## TODO: could this exceed the total time
                 self.unmute()
 
+
         agentIndex = self.startingIndex
         numAgents = len( self.agents )
+        for N in range(len(self.trail)) :
+                for M in range(len(self.trail[0])) :
+                    self.trail[N][M] = 0
         while not self.gameOver:
             # Fetch the next agent
             agent = self.agents[agentIndex]
@@ -624,6 +628,7 @@ class Game:
                 if self.numMoves != counter:
                     jointActions = agent.assignJointActions(observation)
                     counter += 1
+
 
             # Generate an observation of the state
             if 'observationFunction' in dir( agent ):
@@ -701,6 +706,7 @@ class Game:
                     # print agentIndex
                 else:
                     action = agent.getAction(observation)
+
             self.unmute()
 
             # Execute the action
@@ -719,15 +725,24 @@ class Game:
                 self.state = self.state.generateSuccessor( agentIndex, action )
 
             # Update trails based on ghosts current position.
-            ghostPositions = self.state.getGhostPositions()
-            for (x,y) in ghostPositions :
-                self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 1
-            #print "actions applied"
-            # DEBUG
-            # print self.trail   
+            ghosts = self.state.getGhostStates()
+
+            for ghost in ghosts :
+                (x,y) = ghost.getPosition()
+                pacmanPos = self.state.getPacmanPosition()
+                if not ghost.isPacman and self.sight[(ghost.getPosition(), pacmanPos)]:
+                    self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 100
+                else :
+                    self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 25                    
+
+            # Decay all trial values.
+            for N in range(len(self.trail)) :
+                for M in range(len(self.trail[0])) :
+                    self.trail[N][M] /= float(1.1)
 
             # Change the display
             self.display.update( self.state.data )
+            self.display.updateTrails(self.trail)
             ###idx = agentIndex - agentIndex % 2 + 1
             ###self.display.update( self.state.makeObservation(idx).data )
 

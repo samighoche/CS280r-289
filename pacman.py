@@ -100,7 +100,7 @@ class GameState:
 
         # Copy current state
         state = GameState(self)
-        state.trail = self.trail
+
         # Let agent's logic deal with its action's effects on the board
         if agentIndex == 0:  # Pacman is moving
             state.data._eaten = [False for i in range(state.getNumAgents())]
@@ -674,6 +674,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
     """
     Use Floyd Warshall algorithm to precompute distances between all positions
     """
+    print "calculating distances"
     for v in adj_list:
         for u in adj_list:
             dist[(v, u)] = float("inf")
@@ -692,9 +693,12 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
     firstGame.adj_list = adj_list
 
 
+    print "done calculating distances"
+
     """
     Calculate sight for stigmergy.  
     """
+    print "calculating sight"
     sight = {}
     # Set initial values
     for i in range(0,N):
@@ -727,12 +731,16 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
                     break
 
     firstGame.sight = sight
+    print "done calculating sight"
+
     """
     Initialize trail for stigmergy.  
     """
+    print "initialzing trail"
     trail = [[1 for x in range(M)] for x in range(N)] 
 
     firstGame.trail = trail
+    print "done initialzing trail"
 
     firstGame.sight = sight
 
