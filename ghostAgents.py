@@ -101,7 +101,7 @@ def evaluate_joint_action(jointAction, state, depth):
 
     averageDistance = float(sum(dist_to_Pacman))/(len(dist_to_Pacman))
 
-    return len(removedPos) - averageDistance
+    return len(removedPos) - 1.5*averageDistance
 
 
 
@@ -136,6 +136,8 @@ class OneGhost(GhostAgent):
 
 
     def assignJointActions(self, state, depth=4):
+        startTime = time.clock()
+
         pacmanPosition = state.getPacmanPosition()
         #pos = state.getGhostPosition( self.index )
         allGhostPositions = state.getGhostPositions()
@@ -166,7 +168,6 @@ class OneGhost(GhostAgent):
         # for i in xrange(1, numGhosts+1):
         #     jointAction[i] = 'Stop'
         #print "bestJointAction is : ", bestJointAction
-
 
         return list(util.chooseFromDistribution( distribution ))
 
@@ -275,11 +276,12 @@ class TwoGhost(GhostAgent):
 
         averageDistance = float(sum(dist_to_Pacman))/(len(dist_to_Pacman))
 
-        return len(removedPos) - averageDistance
+        return len(removedPos) - 1.5*averageDistance
 
 
 
     def assignJointActions(self, state, numTeams=2, depth=4):
+        startTime = time.clock()
         pacmanPosition = state.getPacmanPosition()
         #pos = state.getGhostPosition( self.index )
         allGhostPositions = state.getGhostPositions()
@@ -305,6 +307,19 @@ class TwoGhost(GhostAgent):
                 if val > bestJointActionValue:
                     bestJointActionValue = val
                     bestJointAction = jointAction
+                elif val == bestJointActionValue:
+                    bestJointActionValue = val
+                    r = random.randint(0, 1)
+                    if r < 0.5:
+                        bestJointAction = jointAction
+                    else:
+                        pass
+            mutation = random.randint(0, 1)
+            if mutation < 0.95:
+                bestJointAction = bestJointAction
+            else:
+                bestJointAction = random.choice(jointActions)
+
             bestJointActions.append(bestJointAction)
 
         for i in supervisor.keys():
@@ -312,6 +327,9 @@ class TwoGhost(GhostAgent):
             #print supervisor[i][1]
             #print bestJointActions
             correctJointAction[i] = bestJointActions[supervisor[i][0]][supervisor[i][1]]
+
+
+        bestProb = 0.95
 
 
         return correctJointAction
