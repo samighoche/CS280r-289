@@ -405,7 +405,7 @@ class ThreeGhost( GhostAgent):
                     removedPos.add(newpos)
         return (len(removedPos), removedPos)
 
-    def getDistribution(self, state, depth=6, list_of_ghost_actions):
+    def getDistribution(self, state, list_of_ghost_actions, depth=6):
         speed = 1
         legalActions = state.getLegalActions( self.index )
         pos = state.getGhostPosition( self.index )
