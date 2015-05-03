@@ -477,20 +477,6 @@ class ThreeGhost( GhostAgent):
         return dist
 
 
-class ThreeGhost(GhostAgent):
-    def __init__(self, index):
-        self.index = index
-
-    def getThreeAction(self, ActionList, state):
-        if not ActionList:
-            return 'Stop'
-        else:
-            legalActions = state.getLegalActions(self.index)
-            return random.choice(legalActions)
-
-    def getDistribution(self, state):
-        raise Exception("This should never come up!")
-
 
 
 
