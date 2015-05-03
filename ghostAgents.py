@@ -405,7 +405,7 @@ class ThreeGhost( GhostAgent):
                     removedPos.add(newpos)
         return (len(removedPos), removedPos)
 
-    def getDistribution(self, state, depth=6, list_of_ghost_actions):
+    def getDistribution(self, state, list_of_ghost_actions, depth=6):
         speed = 1
         legalActions = state.getLegalActions( self.index )
         pos = state.getGhostPosition( self.index )
@@ -476,20 +476,6 @@ class ThreeGhost( GhostAgent):
         dist.normalize()
         return dist
 
-
-class ThreeGhost(GhostAgent):
-    def __init__(self, index):
-        self.index = index
-
-    def getThreeAction(self, ActionList, state):
-        if not ActionList:
-            return 'Stop'
-        else:
-            legalActions = state.getLegalActions(self.index)
-            return random.choice(legalActions)
-
-    def getDistribution(self, state):
-        raise Exception("This should never come up!")
 
 
 
