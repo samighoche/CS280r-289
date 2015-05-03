@@ -731,6 +731,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
     Initialize trail for stigmergy.  
     """
     trail = [[1 for x in range(M)] for x in range(N)] 
+
     firstGame.trail = trail
 
     firstGame.sight = sight
