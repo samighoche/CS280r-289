@@ -576,7 +576,7 @@ class Game:
         # inform learning agents of the game start
 
         # fname = open('results' + str(self.alg) + '.txt', 'a')
-        # timing = []
+        timing = []
 
         for i in range(len(self.agents)):
             agent = self.agents[i]
@@ -617,7 +617,7 @@ class Game:
         agentIndex = self.startingIndex
         numAgents = len( self.agents )
 
-        # runningActionsList = []
+        runningActionsList = []
 
         counter = -1
         GameMoves = 0
@@ -791,8 +791,8 @@ class Game:
         timeForGame = time.clock() - gameStartTime
         #fname.write("The total time to run the games was : " + str(timeForGame) + '\n')
 
-        fname.write(str(average) + ',' + str(timeForGame) + '\n')
-        fname.close()
+        # fname.write(str(average) + ',' + str(timeForGame) + '\n')
+        # fname.close()
         
         # inform a learning agent of the game result
         for agentIndex, agent in enumerate(self.agents):
