@@ -23,13 +23,15 @@ import time
 class GhostAgent( Agent ):
     def __init__( self, index ):
         self.index = index
+        self.lastAction = Directions.STOP
 
     def getAction( self, state ):
         dist = self.getDistribution(state)
         if len(dist) == 0:
             return Directions.STOP
         else:
-            return util.chooseFromDistribution( dist )
+            self.lastAction = util.chooseFromDistribution( dist )
+            return self.lastAction
 
     def getDistribution(self, state):
         "Returns a Counter encoding a distribution over actions from the provided state."
@@ -485,7 +487,7 @@ class DirectionalGhost( GhostAgent ):
         return dist
 
 
-class StigmergyGhost( GhostAgent):
+class RepulseStigmergyGhost( GhostAgent):
     "A ghost that communicates with other ghosts through stigmergy"
     "The ghost rushes pacman when it sees it, and tends to avoid where other ghosts were"
     
@@ -493,6 +495,7 @@ class StigmergyGhost( GhostAgent):
         self.index = index
         self.sawPacman = False
         self.bestAction = Directions.STOP
+        self.last_known = False
 
     def getDistribution( self, state ):
 
@@ -502,15 +505,22 @@ class StigmergyGhost( GhostAgent):
         pos = state.getGhostPosition( self.index )
         trail = state.trail
         pacmanPosition = state.getPacmanPosition()
+        ghostPositions = state.getGhostPositions()
+        actionVectors = [Actions.directionToVector( a, 1 ) for a in legalActions]
+        newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
+        distancesToPacman = [state.dist[( nPos, pacmanPosition )] for nPos in newPositions]
+
+        if self.last_known :
+            if self.last_pos == pos:
+                self.last_known = False
 
         # Put weight if pacman is in sight
         dist = util.Counter()
         if state.sight[(pos, pacmanPosition)] :
+            self.last_known = True
+            self.last_pos = pacmanPosition
             self.sawPacman = True
-            actionVectors = [Actions.directionToVector( a, 1 ) for a in legalActions]
-            newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
-            distancesToPacman = [state.dist[( pos, pacmanPosition )] for pos in newPositions]
-
+            
             bestScore = min( distancesToPacman )
             bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
             for a in bestActions:
@@ -523,13 +533,17 @@ class StigmergyGhost( GhostAgent):
             if self.bestAction in legalActions :
                 dist[self.bestAction] = 4 * len(legalActions)
             dist.normalize()
+        else :
+            self.bestAction = None
 
-        # print "before additions"
-        # print dist
-        # Extract trail values
-        actionVectors = [Actions.directionToVector( a, 1 ) for a in legalActions]       
-        newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
-        
+        # We have an idea where pacman is, so put pias towards that
+        if self.last_known == True :
+            distancesToPacman = [state.dist[( nPos, self.last_pos )] for nPos in newPositions]
+            bestScore = min( distancesToPacman )
+            bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
+            for a in bestActions: dist[a] += 2 * len(legalActions)
+
+        # Extract trail values        
         trailValues = {}
 
         for nPos in newPositions :
@@ -539,22 +553,33 @@ class StigmergyGhost( GhostAgent):
 
         totalValue = 0
         for (a,b), value in trailValues.iteritems() :
-            totalValue += value
+            totalValue += value       
+
+        for nPos in newPositions :
+            if nPos == pos :
+                continue
+            trailValues[nPos] = trail[int(nPos[0])][int(nPos[1])]
+
 
         # Construct distribution
         for a in legalActions :
             actionVector = Actions.directionToVector( a, 1 )
             newPosition = ( pos[0]+actionVector[0], pos[1]+actionVector[1] )
+            # don't ever stop
             if newPosition == pos :
                 continue 
+            # We have no other possible legal action.
             if len(legalActions) == 2:
                 dist[a] = 1
                 break
             if totalValue == 0:
-                if not a == self.bestAction:
-                    dist[a] = 1
+                dist[a] += 1
             else :
-                dist[a] += ( totalValue-trailValues[newPosition] ) / float((len(legalActions)-1) *totalValue)
+                dist[a] += ( totalValue -trailValues[newPosition] ) / float((len(legalActions)-1) *totalValue)
+            # Avoid trying to follow other ghosts.
+            if newPosition in ghostPositions :
+                dist[a] /= 10.
+
 
         # print "final dist"
         dist.normalize()
@@ -571,7 +596,7 @@ class BlindDirectionalGhost( GhostAgent ):
     def getDistribution( self, state ):
 
         # Read variables from state
-        
+
         ghostState = state.getGhostState( self.index )
         legalActions = state.getLegalActions( self.index )
         pos = state.getGhostPosition( self.index )
@@ -602,6 +627,110 @@ class BlindDirectionalGhost( GhostAgent ):
             for a in legalActions: dist[a] += ( 1-bestProb ) / len(legalActions)
             
         dist.normalize()
-        return dist        
+        return dist
+
+class AttractStigmergyGhost( GhostAgent):
+    "A ghost that communicates with other ghosts through stigmergy"
+    "The ghost rushes pacman when it sees it, and tends to go where other ghosts were"
+    
+    def __init__( self, index):
+        self.index = index
+        self.sawPacman = False
+        self.bestAction = Directions.STOP
+        self.last_known = False
+        self.lastAction = Directions.STOP
+
+    def getDistribution( self, state ):
+
+        # Read variables from state
+        ghostState = state.getGhostState( self.index )
+        legalActions = state.getLegalActions( self.index )
+        pos = state.getGhostPosition( self.index )
+        trail = state.trail
+        pacmanPosition = state.getPacmanPosition()
+        ghostPositions = state.getGhostPositions()
+        actionVectors = [Actions.directionToVector( a, 1 ) for a in legalActions]
+        newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
+        distancesToPacman = [state.dist[( nPos, pacmanPosition )] for nPos in newPositions]
+
+        if self.last_known :
+            if self.last_pos == pos:
+                self.last_known = False
+
+        # Put weight if pacman is in sight
+        dist = util.Counter()
+        if state.sight[(pos, pacmanPosition)] :
+            self.last_known = True
+            self.last_pos = pacmanPosition
+            self.sawPacman = True
+            
+            bestScore = min( distancesToPacman )
+            bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
+            for a in bestActions:
+                self.bestAction = a
+                dist[a] = 4 * len(legalActions) / float(len(bestActions))
+
+        elif self.sawPacman:
+            # We saw Pacman before, so he may have gone around a corner.
+            self.sawPacman = False
+            if self.bestAction in legalActions :
+                dist[self.bestAction] = 4 * len(legalActions)
+            dist.normalize()
+        else :
+            self.bestAction = None
+
+        # We have an idea where pacman is, so put bias towards that
+        if self.last_known == True :
+            distancesToPacman = [state.dist[( nPos, self.last_pos )] for nPos in newPositions]
+            bestScore = min( distancesToPacman )
+            bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
+            for a in bestActions: dist[a] += 2 * len(legalActions)
+
+        # Extract trail values        
+        trailValues = {}
+
+        for nPos in newPositions :
+            if nPos == pos :
+                continue
+            trailValues[nPos] = trail[int(nPos[0])][int(nPos[1])]
+
+        totalValue = 0
+        for (a,b), value in trailValues.iteritems() :
+            totalValue += value       
+
+        for nPos in newPositions :
+            if nPos == pos :
+                continue
+            trailValues[nPos] = trail[int(nPos[0])][int(nPos[1])]
+
+
+        # Construct distribution
+        for a in legalActions :
+            actionVector = Actions.directionToVector( a, 1 )
+            newPosition = ( pos[0]+actionVector[0], pos[1]+actionVector[1] )
+            # don't ever stop
+            if newPosition == pos :
+                continue 
+            # We have no other possible legal action.
+            if len(legalActions) == 2:
+                dist[a] = 1
+                break
+            # Try to avoid using the reverse action
+            if a == Actions.reverseDirection(self.lastAction) :
+                dist[a] = 0
+                continue
+            if totalValue == 0:
+                dist[a] += 1
+            else :
+                dist[a] += (1 + trailValues[newPosition] ) / float((len(legalActions)-1) *totalValue)
+            # Avoid trying to follow other ghosts.
+            if newPosition in ghostPositions :
+                dist[a] /= 10.
+
+
+        # print "final dist"
+        dist.normalize()
+        # print dist
+        return dist
 
 

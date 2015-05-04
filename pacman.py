@@ -207,6 +207,9 @@ class GameState:
         return self.data.layout.walls[x][y]
 
     def isLose( self ):
+        if self.data.score == 500;
+            self.data.score -= 500
+            return True
         return self.data._lose
 
     def isWin( self ):
@@ -286,6 +289,8 @@ class ClassicGameRules:
         Checks to see whether it is time to end the game.
         """
         if state.isWin(): self.win(state, game)
+        # Hard cap for stigmergy to prevent game from
+        # going too long
         if state.isLose(): self.lose(state, game)
 
     def win( self, state, game ):
@@ -689,7 +694,7 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
            
 
     firstGame.dist = dist
-    firstGame.adj_list = adj_list
+    # firstGame.adj_list = adj_list
 
 
     print "done calculating distances"
@@ -735,16 +740,24 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
     """
     Initialize trail for stigmergy.  
     """
-    print "initialzing trail"
+    print "initializing trail"
     trail = [[1 for x in range(M)] for x in range(N)] 
 
     firstGame.trail = trail
-    print "done initialzing trail"
+    print "done initializing trail"
+    print "initializing ghostpositions"
+    ghostpositions = [[0 for x in range(M)] for x in range(N)] 
+
+    firstGame.trail = trail
+    print "done initializing ghostpositions"
 
     firstGame.sight = sight
 
 
     firstGame.alg = alg
+
+    scores = []
+    wins = []
 
     for i in range( numGames ):
         beQuiet = i < numTraining
@@ -763,19 +776,20 @@ def runGames( layout, pacman, ghosts, display, numGames, record, alg=None, numTr
         game.sight = sight
         game.trail = trail
         game.run()
-        if not beQuiet: games.append(game)
 
-        if record:
-            import time, cPickle
-            fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
-            f = file(fname, 'w')
-            components = {'layout': layout, 'actions': game.moveHistory}
-            cPickle.dump(components, f)
-            f.close()
+        if not beQuiet: 
+            scores.append(game.state.getScore())
+            wins.append(game.state.isWin())
+
+        # if record:
+        #     import time, cPickle
+        #     fname = ('recorded-game-%d' % (i + 1)) +  '-'.join([str(t) for t in time.localtime()[1:6]])
+        #     f = file(fname, 'w')
+        #     components = {'layout': layout, 'actions': game.moveHistory}
+        #     cPickle.dump(components, f)
+        #     f.close()
 
     if (numGames-numTraining) > 0:
-        scores = [game.state.getScore() for game in games]
-        wins = [game.state.isWin() for game in games]
         winRate = wins.count(True)/ float(len(wins))
         print 'Average Score:', sum(scores) / float(len(scores))
         print 'Scores:       ', ', '.join([str(score) for score in scores])

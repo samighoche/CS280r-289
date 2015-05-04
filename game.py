@@ -569,7 +569,11 @@ class Game:
         Main control loop for game play.
         """
         self.display.initialize(self.state.data)
-        self.display.drawTrails(self.trail);
+        # XXX really shouldn't do this, probably incorporate this into initalize.
+        try:
+            self.display.drawTrails(self.trail)
+        except AttributeError :
+            pass
         self.numMoves = 0
         # print self.alg
         ###self.display.initialize(self.state.makeObservation(1).data)
@@ -698,7 +702,7 @@ class Game:
                     return
             else:
                 observation.dist = self.dist
-                observation.adj_list = self.adj_list
+                # observation.adj_list = self.adj_list
                 observation.sight = self.sight
                 observation.trail = self.trail
                 if (self.alg == 'alg1' or self.alg == 'alg2') and (agentIndex is not 0):
@@ -710,8 +714,6 @@ class Game:
             self.unmute()
 
             # Execute the action
-            self.state.trail = self.trail   
-            #print "start actions"
             self.moveHistory.append( (agentIndex, action) )
             if self.catchExceptions:
                 try:
@@ -738,11 +740,17 @@ class Game:
             # Decay all trial values.
             for N in range(len(self.trail)) :
                 for M in range(len(self.trail[0])) :
-                    self.trail[N][M] /= float(1.1)
+                    self.trail[N][M] /= float(1.05)
 
             # Change the display
             self.display.update( self.state.data )
-            self.display.updateTrails(self.trail)
+            # XXX Another hack, should incorporate this cleaning
+            # into display.update
+            try :
+                self.display.updateTrails(self.trail)
+            except AttributeError :
+                pass
+                
             ###idx = agentIndex - agentIndex % 2 + 1
             ###self.display.update( self.state.makeObservation(idx).data )
 
