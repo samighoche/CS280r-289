@@ -571,6 +571,7 @@ class BlindDirectionalGhost( GhostAgent ):
     def getDistribution( self, state ):
 
         # Read variables from state
+        
         ghostState = state.getGhostState( self.index )
         legalActions = state.getLegalActions( self.index )
         pos = state.getGhostPosition( self.index )
