@@ -106,6 +106,55 @@ def evaluate_joint_action(jointAction, state, depth):
 
 
 
+
+
+def evaluateHeuristic(state, depth=6):
+    walls = list(state.getWalls())
+    N = len(walls)
+    M = len(walls[0])
+
+    pacmanPosition = state.getPacmanPosition()
+    #pos = state.getGhostPosition( self.index )
+    removedPos = set()
+    allGhostPositions = state.getGhostPositions()
+
+
+    dist_to_Pacman = []
+
+    for ghostposition in allGhostPositions:
+        # check current
+        dist_to_Pacman.append(state.dist[(ghostposition, pacmanPosition)])
+        #dist_to_Pacman.append(manhattanDistance(ghostposition, pacmanPosition))
+        if manhattanDistance(ghostposition, pacmanPosition) <= depth:
+            removedPos.add(ghostposition)
+        # check top
+        if ghostposition[0] > 0:
+            newpos = (ghostposition[0]-1, ghostposition[1])
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        # check bottom
+        if ghostposition[0] < N-1:
+            newpos = (ghostposition[0]+1, ghostposition[1])
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        # check left
+        if ghostposition[1] > 0:
+            newpos = (ghostposition[0], ghostposition[1]-1)
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+        #check right        
+        if ghostposition[1] < M-1:
+            newpos = (ghostposition[0], ghostposition[1]+1)
+            if manhattanDistance(newpos, pacmanPosition) <= depth:
+                removedPos.add(newpos)
+
+    averageDistance = float(sum(dist_to_Pacman))/(len(dist_to_Pacman))
+
+    return len(removedPos) - 1.5*averageDistance
+
+
+
+
 class OneGhost(GhostAgent):
 
     def get_all_joint_actions(self, n, state):
@@ -174,6 +223,7 @@ class OneGhost(GhostAgent):
         #     jointAction[i] = 'Stop'
         #print "bestJointAction is : ", bestJointAction
 
+        print evaluateHeuristic(state)
         return list(util.chooseFromDistribution( distribution ))
 
 
@@ -337,7 +387,7 @@ class TwoGhost(GhostAgent):
 
         bestProb = 0.95
 
-
+        print evaluateHeuristic(state)
         return correctJointAction
         #return bestPolicy
 
@@ -355,11 +405,14 @@ class ThreeGhost( GhostAgent):
         self.index = index
 
     def getThreeAction( self, state, list_of_ghost_actions):
+        print evaluateHeuristic(state)
         dist = self.getDistribution(state, list_of_ghost_actions)
         if len(dist) == 0:
             return Directions.STOP
         else:
-            return util.chooseFromDistribution( dist )
+            act = util.chooseFromDistribution( dist )
+            #print self.index, act
+            return act
 
     def count_removed_from_others(self, state, depth, list_of_ghost_actions):
         pacmanPosition = state.getPacmanPosition()
@@ -594,6 +647,8 @@ class FiveGhost( GhostAgent):
         for a in bestActions: dist[a] = bestProb / len(bestActions)
         for a in legalActions: dist[a] += ( 1-bestProb ) / len(legalActions)
         dist.normalize()
+        
+        print evaluateHeuristic(state)
         return dist
 
 class DirectionalGhost( GhostAgent ):

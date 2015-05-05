@@ -569,7 +569,7 @@ class Game:
         Main control loop for game play.
         """
         self.display.initialize(self.state.data)
-        self.display.drawTrails(self.trail);
+        #self.display.drawTrails(self.trail);
         self.numMoves = 0
         # print self.alg
         ###self.display.initialize(self.state.makeObservation(1).data)
@@ -624,15 +624,27 @@ class Game:
 
         # gameStartTime = time.clock()
 
-        for N in range(len(self.trail)) :
-                for M in range(len(self.trail[0])) :
-                    self.trail[N][M] = 0
+
+        alg4List = self.agents[:]
+
+        pacman = alg4List.pop(0)
+        alg4List.append(pacman)
+
+        # for N in range(len(self.trail)) :
+        #         for M in range(len(self.trail[0])) :
+        #             self.trail[N][M] = 0
         while not self.gameOver:
             # Fetch the next agent
-            agent = self.agents[agentIndex]
-            move_time = 0
-            skip_action = False
 
+            if self.alg == 'alg4':
+                agent = alg4List[agentIndex]
+                move_time = 0
+                skip_action = False
+
+            else:
+                agent = self.agents[agentIndex]
+                move_time = 0
+                skip_action = False
 
 
             if (self.alg == "alg1" or self.alg == 'alg2') and (agentIndex is not 0):
@@ -713,7 +725,7 @@ class Game:
                 observation.dist = self.dist
                 observation.adj_list = self.adj_list
                 observation.sight = self.sight
-                observation.trail = self.trail
+                # observation.trail = self.trail
                 if (self.alg == 'alg1' or self.alg == 'alg2') and (agentIndex is not 0):
                     action = jointActions[agentIndex-1]
                     # print agentIndex
@@ -722,6 +734,14 @@ class Game:
                     action = agent.getThreeAction(observation, runningActionsList)
                     runningActionsList.append(action)
                     timing.append(time.clock() - startTime)
+
+                elif (self.alg == 'alg4') and (agentIndex is not (len(alg4List) - 1)):
+
+                    action = agent.getThreeAction(observation, runningActionsList)
+
+                    runningActionsList.append(action)
+                elif (self.alg == 'alg4') and (agentIndex is (len(alg4List) - 1)):
+                    action = agent.getAction(observation, runningActionsList)
                 else:
                     # if agentIndex is not 0:
                     #     startTime = time.clock()
@@ -733,21 +753,33 @@ class Game:
                     action = agent.getAction(observation)
 
             self.unmute()
-
             # Execute the action
-            self.state.trail = self.trail   
+            # self.state.trail = self.trail   
             #print "start actions"
             self.moveHistory.append( (agentIndex, action) )
             if self.catchExceptions:
                 try:
-                    self.state = self.state.generateSuccessor( agentIndex, action )
+                    if self.alg == 'alg4':
+                        if agentIndex is not (len(alg4List) - 1):
+                            self.state = self.state.generateSuccessor( agentIndex + 1, action )
+                        else:
+                            self.state = self.state.generateSuccessor( 0, action )
+                    else:
+                        self.state = self.state.generateSuccessor( agentIndex, action )
                 except Exception,data:
                     self.mute(agentIndex)
                     self._agentCrash(agentIndex)
                     self.unmute()
                     return
             else:
-                self.state = self.state.generateSuccessor( agentIndex, action )
+                if self.alg == 'alg4':
+                    if agentIndex is not (len(alg4List) - 1):
+                        self.state = self.state.generateSuccessor( agentIndex + 1, action )
+                    else:
+                        self.state = self.state.generateSuccessor( 0, action )
+                else:
+                    self.state = self.state.generateSuccessor( agentIndex, action )
+
 
             # Update trails based on ghosts current position.
             ghosts = self.state.getGhostStates()
@@ -755,19 +787,19 @@ class Game:
             for ghost in ghosts :
                 (x,y) = ghost.getPosition()
                 pacmanPos = self.state.getPacmanPosition()
-                if not ghost.isPacman and self.sight[(ghost.getPosition(), pacmanPos)]:
-                    self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 100
-                else :
-                    self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 25                    
+                # if not ghost.isPacman and self.sight[(ghost.getPosition(), pacmanPos)]:
+                #     self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 100
+                # else :
+                #     self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 25                    
 
             # Decay all trial values.
-            for N in range(len(self.trail)) :
-                for M in range(len(self.trail[0])) :
-                    self.trail[N][M] /= float(1.1)
+            # for N in range(len(self.trail)) :
+            #     for M in range(len(self.trail[0])) :
+            #         self.trail[N][M] /= float(1.1)
 
             # Change the display
             self.display.update( self.state.data )
-            self.display.updateTrails(self.trail)
+            # self.display.updateTrails(self.trail)
             ###idx = agentIndex - agentIndex % 2 + 1
             ###self.display.update( self.state.makeObservation(idx).data )
 
@@ -785,10 +817,10 @@ class Game:
             if _BOINC_ENABLED:
                 boinc.set_fraction_done(self.getProgress())
 
-        average = float(sum(timing))/len(timing)
+        #average = float(sum(timing))/len(timing)
         #fname.write(str(average) + '\n')
 
-        timeForGame = time.clock() - gameStartTime
+        #timeForGame = time.clock() - gameStartTime
         #fname.write("The total time to run the games was : " + str(timeForGame) + '\n')
 
         # fname.write(str(average) + ',' + str(timeForGame) + '\n')

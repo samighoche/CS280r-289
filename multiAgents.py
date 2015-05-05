@@ -13,6 +13,7 @@ DEVVRET RISHI
 from util import manhattanDistance
 from game import Directions
 import random, util
+from game import Actions
 
 from game import Agent
 
@@ -507,7 +508,6 @@ class OverhearingAgent(MultiAgentSearchAgent):
     allGhostPositions = gameState.getGhostPositions()
     speed = 1
     actionVectors = [Actions.directionToVector( a, speed ) for a in list_of_ghost_actions]
-    newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
     for i in range(len(list_of_ghost_actions)):
         allGhostPositions[i] = (allGhostPositions[i][0]+actionVectors[i][0], allGhostPositions[i][1]+actionVectors[i][1])
     def mindistance(pos, ghostpositions):
@@ -515,14 +515,14 @@ class OverhearingAgent(MultiAgentSearchAgent):
       for ghostposition in ghostpositions:
         minimum = min(minimum, util.manhattanDistance(pos, ghostposition))
       return min(minimum, 50)
-    pos = gameState.getPacmanPosition()
     action = Directions.STOP
     maxv = float("-inf")
     legalActions = gameState.getLegalActions(0)
     for a in legalActions:
       penalty = 0
+      pos = gameState.generateSuccessor(0, a).getPacmanPosition()
       mindist = mindistance(pos, allGhostPositions)
-      if mindist == 0:
+      if mindist == 0 or pos in gameState.getGhostPositions():
         penalty = -500 
       v = 10*penalty + 50*mindist
       if maxv < v:
