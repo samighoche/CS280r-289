@@ -1,6 +1,6 @@
 '''
 SAMI GHOCHE
-ANDREW MALEK
+DEVVRET RISHI
 '''
 # multiAgents.py
 # --------------
@@ -13,6 +13,7 @@ ANDREW MALEK
 from util import manhattanDistance
 from game import Directions
 import random, util
+from game import Actions
 
 from game import Agent
 
@@ -497,6 +498,33 @@ class ContestAgent(MultiAgentSearchAgent):
     legalActions = gameState.getLegalActions(0)
     for a in legalActions:
       v = minValue(gameState.generateSuccessor(0, a), float("-inf"), float("inf"), self.depth, 1)
+      if maxv < v:
+        maxv = v
+        action = a
+    return action
+
+class OverhearingAgent(MultiAgentSearchAgent):
+  def getAction(self, gameState, list_of_ghost_actions= []):
+    allGhostPositions = gameState.getGhostPositions()
+    speed = 1
+    actionVectors = [Actions.directionToVector( a, speed ) for a in list_of_ghost_actions]
+    for i in range(len(list_of_ghost_actions)):
+        allGhostPositions[i] = (allGhostPositions[i][0]+actionVectors[i][0], allGhostPositions[i][1]+actionVectors[i][1])
+    def mindistance(pos, ghostpositions):
+      minimum = float("inf")
+      for ghostposition in ghostpositions:
+        minimum = min(minimum, util.manhattanDistance(pos, ghostposition))
+      return min(minimum, 50)
+    action = Directions.STOP
+    maxv = float("-inf")
+    legalActions = gameState.getLegalActions(0)
+    for a in legalActions:
+      penalty = 0
+      pos = gameState.generateSuccessor(0, a).getPacmanPosition()
+      mindist = mindistance(pos, allGhostPositions)
+      if mindist == 0 or pos in gameState.getGhostPositions():
+        penalty = -500 
+      v = 10*penalty + 50*mindist
       if maxv < v:
         maxv = v
         action = a
