@@ -503,14 +503,14 @@ class ContestAgent(MultiAgentSearchAgent):
     return action
 
 class OverhearingAgent(MultiAgentSearchAgent):
-  def getAction(self, gameState, list_of_ghost_actions):
+  def getAction(self, gameState, list_of_ghost_actions= []):
     allGhostPositions = gameState.getGhostPositions()
     speed = 1
     actionVectors = [Actions.directionToVector( a, speed ) for a in list_of_ghost_actions]
     newPositions = [( pos[0]+a[0], pos[1]+a[1] ) for a in actionVectors]
     for i in range(len(list_of_ghost_actions)):
         allGhostPositions[i] = (allGhostPositions[i][0]+actionVectors[i][0], allGhostPositions[i][1]+actionVectors[i][1])
-    def mindistance(self, pos, ghostpositions):
+    def mindistance(pos, ghostpositions):
       minimum = float("inf")
       for ghostposition in ghostpositions:
         minimum = min(minimum, util.manhattanDistance(pos, ghostposition))
@@ -521,7 +521,7 @@ class OverhearingAgent(MultiAgentSearchAgent):
     legalActions = gameState.getLegalActions(0)
     for a in legalActions:
       penalty = 0
-      mindist = mindistance(pos, allGhostpositions)
+      mindist = mindistance(pos, allGhostPositions)
       if mindist == 0:
         penalty = -500 
       v = 10*penalty + 50*mindist
