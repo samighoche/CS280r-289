@@ -1,6 +1,6 @@
 '''
 SAMI GHOCHE
-ANDREW MALEK
+DEVVRET RISHI
 '''
 # multiAgents.py
 # --------------
