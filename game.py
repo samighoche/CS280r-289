@@ -738,9 +738,11 @@ class Game:
             #         self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 25                    
 
             # Decay all trial values.
-            for N in range(len(self.trail)) :
-                for M in range(len(self.trail[0])) :
-                    self.trail[N][M] /= float(1.05)
+            if agentIndex == 0 :
+                for N in range(len(self.trail)) :
+                    for M in range(len(self.trail[0])) :
+                        self.trail[N][M] /= 1.25
+                        
 
             # Change the display
             self.display.update( self.state.data )
