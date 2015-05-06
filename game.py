@@ -729,13 +729,13 @@ class Game:
             # Update trails based on ghosts current position.
             ghosts = self.state.getGhostStates()
 
-            for ghost in ghosts :
-                (x,y) = ghost.getPosition()
-                pacmanPos = self.state.getPacmanPosition()
-                if not ghost.isPacman and self.sight[(ghost.getPosition(), pacmanPos)]:
-                    self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 100
-                else :
-                    self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 25                    
+            # for ghost in ghosts :
+            #     (x,y) = ghost.getPosition()
+            #     pacmanPos = self.state.getPacmanPosition()
+            #     if not ghost.isPacman and self.sight[(ghost.getPosition(), pacmanPos)]:
+            #         self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 100
+            #     elif not ghost.isPacman :
+            #         self.trail[int(x)][int(y)] = self.trail[int(x)][int(y)] + 25                    
 
             # Decay all trial values.
             for N in range(len(self.trail)) :

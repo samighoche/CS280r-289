@@ -224,7 +224,10 @@ class PacmanGraphics:
             for y in range(len(self.distributionImages[0])):
                 image = self.distributionImages[x][y]
                 value = trails[x][y]
-                color = [value/maxValue,0,0]
+                if(maxValue > 0) :
+                    color = [value/maxValue,0,0]
+                else :
+                    color = [0,0,0]
                 changeColor(image, formatColor(*color))
         refresh()                
 

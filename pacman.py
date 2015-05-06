@@ -207,7 +207,7 @@ class GameState:
         return self.data.layout.walls[x][y]
 
     def isLose( self ):
-        if self.data.score == 500;
+        if self.data.score == 500:
             self.data.score -= 500
             return True
         return self.data._lose

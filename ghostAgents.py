@@ -497,6 +497,21 @@ class RepulseStigmergyGhost( GhostAgent):
         self.bestAction = Directions.STOP
         self.last_known = False
 
+    def getAction( self, state ):
+        dist = self.getDistribution(state)
+        if len(dist) == 0:
+            return Directions.STOP
+        else:
+            self.lastAction = util.chooseFromDistribution( dist )
+            # Stigmergy
+            (x,y) = state.getGhostPosition(self.index)
+            if self.sawPacman :
+                state.trail[int(x)][int(y)] += 100
+            else:
+                state.trail[int(x)][int(y)] += 25  
+            return self.lastAction                  
+            
+
     def getDistribution( self, state ):
 
         # Read variables from state
@@ -525,23 +540,23 @@ class RepulseStigmergyGhost( GhostAgent):
             bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
             for a in bestActions:
                 self.bestAction = a
-                dist[a] = 4 * len(legalActions) / float(len(bestActions))
+                dist[a] += 6 * (len(legalActions) - 1)
 
         elif self.sawPacman:
             # We saw Pacman before, so he may have gone around a corner.
             self.sawPacman = False
             if self.bestAction in legalActions :
-                dist[self.bestAction] = 4 * len(legalActions)
+                dist[self.bestAction] += 6 * (len(legalActions) - 1)
             dist.normalize()
         else :
-            self.bestAction = None
+            self.bestAction = Directions.STOP
 
         # We have an idea where pacman is, so put pias towards that
         if self.last_known == True :
             distancesToPacman = [state.dist[( nPos, self.last_pos )] for nPos in newPositions]
             bestScore = min( distancesToPacman )
             bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
-            for a in bestActions: dist[a] += 2 * len(legalActions)
+            for a in bestActions: dist[a] += 2 * (len(legalActions) - 1) 
 
         # Extract trail values        
         trailValues = {}
@@ -575,7 +590,7 @@ class RepulseStigmergyGhost( GhostAgent):
             if totalValue == 0:
                 dist[a] += 1
             else :
-                dist[a] += ( totalValue -trailValues[newPosition] ) / float((len(legalActions)-1) *totalValue)
+                dist[a] += (len(legalActions) - 1) * (totalValue -trailValues[newPosition] ) / float(totalValue)
             # Avoid trying to follow other ghosts.
             if newPosition in ghostPositions :
                 dist[a] /= 10.
@@ -583,7 +598,6 @@ class RepulseStigmergyGhost( GhostAgent):
 
         # print "final dist"
         dist.normalize()
-        # print dist
         return dist
 
 class BlindDirectionalGhost( GhostAgent ):
@@ -640,6 +654,20 @@ class AttractStigmergyGhost( GhostAgent):
         self.last_known = False
         self.lastAction = Directions.STOP
 
+    def getAction( self, state ):
+        dist = self.getDistribution(state)
+        if len(dist) == 0:
+            return Directions.STOP
+        else:
+            self.lastAction = util.chooseFromDistribution( dist )
+            # Stigmergy
+            (x,y) = state.getGhostPosition(self.index)
+            if self.sawPacman :
+                state.trail[int(x)][int(y)] += 100
+            elif self.last_known:
+                state.trail[int(x)][int(y)] = state.trail[int(x)][int(y)] + 25                    
+            return self.lastAction
+
     def getDistribution( self, state ):
 
         # Read variables from state
@@ -668,23 +696,23 @@ class AttractStigmergyGhost( GhostAgent):
             bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
             for a in bestActions:
                 self.bestAction = a
-                dist[a] = 4 * len(legalActions) / float(len(bestActions))
+                dist[a] = 4 
 
         elif self.sawPacman:
             # We saw Pacman before, so he may have gone around a corner.
             self.sawPacman = False
             if self.bestAction in legalActions :
-                dist[self.bestAction] = 4 * len(legalActions)
+                dist[self.bestAction] = 4
             dist.normalize()
         else :
-            self.bestAction = None
+            self.bestAction = Directions.STOP
 
         # We have an idea where pacman is, so put bias towards that
         if self.last_known == True :
             distancesToPacman = [state.dist[( nPos, self.last_pos )] for nPos in newPositions]
             bestScore = min( distancesToPacman )
             bestActions = [action for action, distance in zip( legalActions, distancesToPacman ) if distance == bestScore]
-            for a in bestActions: dist[a] += 2 * len(legalActions)
+            for a in bestActions: dist[a] += 2 
 
         # Extract trail values        
         trailValues = {}
@@ -715,17 +743,23 @@ class AttractStigmergyGhost( GhostAgent):
             if len(legalActions) == 2:
                 dist[a] = 1
                 break
-            # Try to avoid using the reverse action
-            if a == Actions.reverseDirection(self.lastAction) :
-                dist[a] = 0
-                continue
-            if totalValue == 0:
-                dist[a] += 1
+            if totalValue > 0 :
+                dist[a] += (1 + 4 * trailValues[newPosition] / float(totalValue) )
+                # Avoid trying to follow other ghosts.
+                if newPosition in ghostPositions :
+                    dist[a] -= (0.95 + 4 * trailValues[newPosition] / float(totalValue))
+                # Avoid trying to backtrack
+                elif a == Actions.reverseDirection(self.lastAction) and not a in self.bestAction :
+                    dist[a] -= (0.9 + 4 * trailValues[newPosition] / float(totalValue))
             else :
-                dist[a] += (1 + trailValues[newPosition] ) / float((len(legalActions)-1) *totalValue)
-            # Avoid trying to follow other ghosts.
-            if newPosition in ghostPositions :
-                dist[a] /= 10.
+                dist[a] += 1
+                # Avoid trying to follow other ghosts.
+                if newPosition in ghostPositions :
+                    dist[a] -= 0.95
+                # Avoid trying to backtrack
+                elif a == Actions.reverseDirection(self.lastAction) and not a in self.bestAction :
+                    dist[a] -= 0.9
+                
 
 
         # print "final dist"
